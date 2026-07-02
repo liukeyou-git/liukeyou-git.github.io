@@ -1,9 +1,7 @@
 ---
-import Header from '../components/layout/Header.astro';
 import Footer from '../components/layout/Footer.astro';
 import PageTransition from '../components/animations/PageTransition';
-import SmoothScroll from '../components/animations/SmoothScroll';
-import MouseFollower from '../components/animations/MouseFollower';
+import AppRoot from '../components/AppRoot';
 import '../styles/global.css';
 
 interface Props {
@@ -27,14 +25,13 @@ const { title, description = "liukeyou's personal blog" } = Astro.props;
     <title>{title}</title>
   </head>
   <body class="min-h-screen bg-bg-primary text-text-primary antialiased">
-    <SmoothScroll client:load />
-    <MouseFollower client:load />
-    <Header />
-    <main class="pt-20">
-      <PageTransition client:load>
-        <slot />
-      </PageTransition>
-    </main>
-    <Footer />
+    <AppRoot client:load>
+      <main class="pt-20">
+        <PageTransition client:load>
+          <slot />
+        </PageTransition>
+      </main>
+      <Footer />
+    </AppRoot>
   </body>
 </html>
