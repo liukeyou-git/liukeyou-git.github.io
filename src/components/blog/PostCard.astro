@@ -1,0 +1,45 @@
+---
+import type { CollectionEntry } from 'astro:content';
+
+interface Props {
+  post: CollectionEntry<'blog'>;
+}
+
+const { post } = Astro.props;
+const { title, description, publishedAt, tags } = post.data;
+
+function formatDate(date: Date) {
+  return new Intl.DateTimeFormat('zh-CN', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).format(date);
+}
+---
+
+<a
+  href={`/blog/${post.id}`}
+  class="block group p-6 rounded-2xl glass hover:bg-white/[0.06] transition-all duration-300 hover:-translate-y-1"
+>
+  <!-- Tags -->
+  <div class="flex flex-wrap gap-1.5 mb-3">
+    {tags.slice(0, 3).map((tag) => (
+      <span class="px-2 py-0.5 text-[0.65rem] rounded-full bg-accent/10 text-accent-hover border border-accent/20 uppercase tracking-wider">
+        {tag}
+      </span>
+    ))}
+  </div>
+
+  <!-- Title -->
+  <h2 class="text-xl font-bold mb-2 text-text-primary group-hover:text-accent-hover transition-colors">
+    {title}
+  </h2>
+
+  <!-- Description -->
+  <p class="text-sm text-text-secondary mb-4 line-clamp-2">{description}</p>
+
+  <!-- Date -->
+  <time datetime={publishedAt.toISOString()} class="text-xs text-text-secondary">
+    {formatDate(publishedAt)}
+  </time>
+</a>

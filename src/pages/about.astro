@@ -1,0 +1,45 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import ScrollReveal from '../components/animations/ScrollReveal.astro';
+---
+
+<BaseLayout title="About — liukeyou" description="关于我">
+  <div class="mx-auto max-w-3xl px-6 pb-24">
+    <ScrollReveal>
+      <h1 class="text-4xl sm:text-5xl font-black gradient-text mb-8">About</h1>
+    </ScrollReveal>
+
+    <ScrollReveal delay={0.1}>
+      <div class="prose">
+        <p>
+          Hi，我是 <strong>liukeyou</strong>，一个热爱编程和写作的开发者。
+        </p>
+
+        <h2>关于这个博客</h2>
+        <p>
+          这里是我不定期更新技术文章的地方。我会分享：
+        </p>
+        <ul>
+          <li>前端开发心得（React、Vue、CSS 动画等）</li>
+          <li>工具链和效率提升技巧</li>
+          <li>开源项目实践</li>
+          <li>技术书籍阅读笔记</li>
+        </ul>
+
+        <h2>技术栈</h2>
+        <p>
+          这个博客使用 <strong>Astro</strong> 构建，React 驱动交互动画，
+          Framer Motion 和 GSAP 实现页面效果，Tailwind CSS 负责样式，
+          部署在 GitHub Pages 上。
+        </p>
+
+        <h2>联系我</h2>
+        <p>
+          你可以在
+          <a href="https://github.com/liukeyou-git" target="_blank" rel="noopener noreferrer">GitHub</a>
+          上找到我。
+        </p>
+      </div>
+    </ScrollReveal>
+  </div>
+</BaseLayout>

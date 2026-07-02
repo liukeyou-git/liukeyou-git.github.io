@@ -1,0 +1,83 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PostCard from '../../components/blog/PostCard.astro';
+import ScrollReveal from '../../components/animations/ScrollReveal.astro';
+import { getCollection } from 'astro:content';
+
+const allPosts = (await getCollection('blog'))
+  .filter((p) => !p.data.draft)
+  .sort((a, b) => b.data.publishedAt.getTime() - a.data.publishedAt.getTime());
+
+// Get unique tags and their counts
+const tagCounts: Record<string, number> = {};
+for (const post of allPosts) {
+  for (const tag of post.data.tags) {
+    tagCounts[tag] = (tagCounts[tag] || 0) + 1;
+  }
+}
+const allTags = Object.entries(tagCounts).sort(([, a], [, b]) => b - a);
+
+// Filter by tag if query param present
+const selectedTag = Astro.url.searchParams.get('tag') || '';
+const posts = selectedTag
+  ? allPosts.filter((p) => p.data.tags.includes(selectedTag))
+  : allPosts;
+---
+
+<BaseLayout title="Blog — liukeyou" description="技术文章和思考">
+  <div class="mx-auto max-w-5xl px-6 pb-24">
+    <ScrollReveal>
+      <h1 class="text-4xl sm:text-5xl font-black gradient-text mb-4">Blog</h1>
+      <p class="text-text-secondary mb-10">
+        共 {allPosts.length} 篇文章，持续更新中。
+      </p>
+    </ScrollReveal>
+
+    <!-- Tags filter -->
+    {
+      allTags.length > 0 && (
+        <ScrollReveal delay={0.1}>
+          <div class="flex flex-wrap gap-2 mb-10">
+            <a
+              href="/blog"
+              class={`px-3 py-1 text-xs rounded-full transition-all ${
+                !selectedTag
+                  ? 'bg-accent text-white'
+                  : 'bg-bg-card text-text-secondary hover:text-text-primary border border-white/5'
+              }`}
+            >
+              全部
+            </a>
+            {allTags.map(([tag, count]) => (
+              <a
+                href={`/blog?tag=${tag}`}
+                class={`px-3 py-1 text-xs rounded-full transition-all ${
+                  selectedTag === tag
+                    ? 'bg-accent text-white'
+                    : 'bg-bg-card text-text-secondary hover:text-text-primary border border-white/5'
+                }`}
+              >
+                {tag} ({count})
+              </a>
+            ))}
+          </div>
+        </ScrollReveal>
+      )
+    }
+
+    <!-- Posts grid -->
+    {
+      posts.length === 0 ? (
+        <p class="text-text-secondary text-center py-20">暂无文章。</p>
+      ) : (
+        <div class="grid gap-4 sm:grid-cols-2">
+          {posts.map((post, i) => (
+            <ScrollReveal delay={i * 0.05}>
+              <PostCard post={post} />
+            </ScrollReveal>
+          ))}
+        </div>
+      )
+    }
+  </div>
+</BaseLayout>

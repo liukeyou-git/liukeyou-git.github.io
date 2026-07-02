@@ -1,0 +1,88 @@
+---
+import ThemeToggle from '../ui/ThemeToggle.astro';
+
+const navItems = [
+  { href: '/', label: 'Home' },
+  { href: '/blog', label: 'Blog' },
+  { href: '/about', label: 'About' },
+];
+---
+
+<header id="header" class="fixed top-0 left-0 right-0 z-50 transition-all duration-300">
+  <div class="mx-auto max-w-5xl px-6 py-4 flex items-center justify-between">
+    <!-- Logo -->
+    <a
+      href="/"
+      class="text-xl font-bold gradient-text hover:opacity-80 transition-opacity"
+    >
+      ~/liukeyou
+    </a>
+
+    <!-- Nav -->
+    <nav class="hidden sm:flex items-center gap-8">
+      {navItems.map((item) => (
+        <a
+          href={item.href}
+          class="text-sm text-text-secondary hover:text-text-primary transition-colors relative group"
+        >
+          {item.label}
+          <span class="absolute -bottom-1 left-0 w-0 h-px bg-accent transition-all duration-300 group-hover:w-full"></span>
+        </a>
+      ))}
+    </nav>
+
+    <!-- Right side -->
+    <div class="flex items-center gap-4">
+      <ThemeToggle />
+      <!-- Mobile menu button (hidden on desktop) -->
+      <button
+        id="mobile-menu-btn"
+        class="sm:hidden text-text-secondary hover:text-text-primary transition-colors"
+        aria-label="Toggle menu"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="3" y1="12" x2="21" y2="12"></line>
+          <line x1="3" y1="6" x2="21" y2="6"></line>
+          <line x1="3" y1="18" x2="21" y2="18"></line>
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- Mobile menu -->
+  <div id="mobile-menu" class="sm:hidden hidden bg-bg-primary/95 backdrop-blur-lg border-b border-white/5">
+    <nav class="flex flex-col px-6 py-4 gap-4">
+      {navItems.map((item) => (
+        <a
+          href={item.href}
+          class="text-text-secondary hover:text-text-primary transition-colors py-1"
+        >
+          {item.label}
+        </a>
+      ))}
+    </nav>
+  </div>
+</header>
+
+<script>
+  // Header scroll effect
+  const header = document.getElementById('header')!;
+  let lastScroll = 0;
+
+  window.addEventListener('scroll', () => {
+    const currentScroll = window.scrollY;
+    if (currentScroll > 50) {
+      header.classList.add('glass', 'shadow-lg', 'shadow-black/10');
+    } else {
+      header.classList.remove('glass', 'shadow-lg', 'shadow-black/10');
+    }
+    lastScroll = currentScroll;
+  });
+
+  // Mobile menu toggle
+  const menuBtn = document.getElementById('mobile-menu-btn')!;
+  const mobileMenu = document.getElementById('mobile-menu')!;
+  menuBtn.addEventListener('click', () => {
+    mobileMenu.classList.toggle('hidden');
+  });
+</script>
