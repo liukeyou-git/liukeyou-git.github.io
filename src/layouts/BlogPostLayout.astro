@@ -5,9 +5,10 @@ import type { CollectionEntry } from 'astro:content';
 
 interface Props {
   post: CollectionEntry<'blog'>;
+  Content: any;
 }
 
-const { post } = Astro.props;
+const { post, Content } = Astro.props;
 
 const formatDate = (date: Date) => {
   return new Date(date).toLocaleDateString('zh-CN', {
@@ -59,7 +60,7 @@ const formatDate = (date: Date) => {
     </header>
     
     <div class="prose">
-      <slot />
+      <Content />
     </div>
     
     <footer class="mt-16 pt-8 border-t border-white/10">
