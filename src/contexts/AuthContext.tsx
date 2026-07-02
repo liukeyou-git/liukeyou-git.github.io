@@ -7,6 +7,7 @@ interface AuthContextType {
   login: (data: LoginFormData) => Promise<void>;
   register: (data: RegisterFormData) => Promise<void>;
   logout: () => Promise<void>;
+  isEnabled: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -18,7 +19,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     error: null,
   });
 
+  const isEnabled = supabase !== null;
+
   useEffect(() => {
+    if (!supabase) {
+      setAuthState({ user: null, isLoading: false, error: null });
+      return;
+    }
+
     const checkAuth = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (session) {
@@ -89,6 +97,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const login = async (data: LoginFormData) => {
+    if (!supabase) return;
     setAuthState((prev) => ({ ...prev, isLoading: true, error: null }));
     const { error } = await supabase.auth.signInWithPassword({
       email: data.email,
@@ -100,6 +109,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const register = async (data: RegisterFormData) => {
+    if (!supabase) return;
     setAuthState((prev) => ({ ...prev, isLoading: true, error: null }));
     const { error: authError } = await supabase.auth.signUp({
       email: data.email,
@@ -123,12 +133,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const logout = async () => {
+    if (!supabase) return;
     await supabase.auth.signOut();
     setAuthState({ user: null, isLoading: false, error: null });
   };
 
   return (
-    <AuthContext.Provider value={{ authState, login, register, logout }}>
+    <AuthContext.Provider value={{ authState, login, register, logout, isEnabled }}>
       {children}
     </AuthContext.Provider>
   );

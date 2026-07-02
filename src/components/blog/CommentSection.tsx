@@ -15,6 +15,11 @@ export default function CommentSection({ postId }: CommentSectionProps) {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
 
   useEffect(() => {
+    if (!supabase) {
+      setIsLoading(false);
+      return;
+    }
+
     const checkAuth = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (session) {
@@ -75,6 +80,11 @@ export default function CommentSection({ postId }: CommentSectionProps) {
   }, []);
 
   const fetchComments = async () => {
+    if (!supabase) {
+      setIsLoading(false);
+      return;
+    }
+
     setIsLoading(true);
     const { data, error } = await supabase
       .from('comments')
@@ -100,6 +110,8 @@ export default function CommentSection({ postId }: CommentSectionProps) {
   useEffect(() => {
     fetchComments();
 
+    if (!supabase) return;
+
     const { data: listener } = supabase
       .channel(`comments:${postId}`)
       .on('INSERT', { event: 'INSERT', schema: 'public', table: 'comments' }, () => {
@@ -114,7 +126,7 @@ export default function CommentSection({ postId }: CommentSectionProps) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!content.trim()) return;
+    if (!supabase || !content.trim()) return;
 
     setIsSubmitting(true);
 
@@ -136,6 +148,7 @@ export default function CommentSection({ postId }: CommentSectionProps) {
   };
 
   const handleLike = async (commentId: string) => {
+    if (!supabase) return;
     const comment = comments.find((c) => c.id === commentId);
     if (comment) {
       await supabase.from('comments').update({ likes: comment.likes + 1 }).eq('id', commentId);
@@ -152,6 +165,14 @@ export default function CommentSection({ postId }: CommentSectionProps) {
       minute: '2-digit',
     });
   };
+
+  if (!supabase) {
+    return (
+      <div className="mt-16">
+        <p className="text-text-secondary text-center py-8">评论功能暂不可用</p>
+      </div>
+    );
+  }
 
   return (
     <div className="mt-16">

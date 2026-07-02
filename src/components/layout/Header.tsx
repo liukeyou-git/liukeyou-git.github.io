@@ -9,7 +9,7 @@ const navItems = [
 ];
 
 export default function Header() {
-  const { authState, logout } = useAuth();
+  const { authState, logout, isEnabled } = useAuth();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
@@ -57,32 +57,34 @@ export default function Header() {
           </nav>
 
           <div className="flex items-center gap-4">
-            {authState.user ? (
-              <div className="flex items-center gap-3">
-                <span className="text-sm text-text-secondary hidden sm:block">
-                  {authState.user.username}
-                </span>
-                <div className="w-8 h-8 rounded-full bg-accent/20 flex items-center justify-center">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-accent">
-                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-                    <circle cx="12" cy="7" r="4"></circle>
-                  </svg>
+            {isEnabled ? (
+              authState.user ? (
+                <div className="flex items-center gap-3">
+                  <span className="text-sm text-text-secondary hidden sm:block">
+                    {authState.user.username}
+                  </span>
+                  <div className="w-8 h-8 rounded-full bg-accent/20 flex items-center justify-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-accent">
+                      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                      <circle cx="12" cy="7" r="4"></circle>
+                    </svg>
+                  </div>
+                  <button
+                    onClick={handleLogout}
+                    className="text-sm text-text-secondary hover:text-text-primary transition-colors"
+                  >
+                    退出
+                  </button>
                 </div>
+              ) : (
                 <button
-                  onClick={handleLogout}
-                  className="text-sm text-text-secondary hover:text-text-primary transition-colors"
+                  onClick={() => setIsModalOpen(true)}
+                  className="px-4 py-2 text-sm font-medium text-text-secondary hover:text-text-primary transition-colors"
                 >
-                  退出
+                  登录
                 </button>
-              </div>
-            ) : (
-              <button
-                onClick={() => setIsModalOpen(true)}
-                className="px-4 py-2 text-sm font-medium text-text-secondary hover:text-text-primary transition-colors"
-              >
-                登录
-              </button>
-            )}
+              )
+            ) : null}
 
             <button
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
@@ -111,7 +113,7 @@ export default function Header() {
                   {item.label}
                 </a>
               ))}
-              {!authState.user && (
+              {isEnabled && !authState.user && (
                 <button
                   onClick={() => {
                     setIsMobileMenuOpen(false);
