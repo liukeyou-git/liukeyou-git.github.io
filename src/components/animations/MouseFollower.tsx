@@ -2,55 +2,114 @@
 
 import { useEffect, useRef } from 'react';
 
+interface Particle {
+  x: number;
+  y: number;
+  vx: number;
+  vy: number;
+  size: number;
+  alpha: number;
+  color: string;
+}
+
 export default function MouseFollower() {
-  const dotRef = useRef<HTMLDivElement>(null);
-  const ringRef = useRef<HTMLDivElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
-    const dot = dotRef.current;
-    const ring = ringRef.current;
-    if (!dot || !ring) return;
+    const canvas = canvasRef.current;
+    if (!canvas) return;
 
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    let particles: Particle[] = [];
+    let animationId: number;
     let mouseX = 0;
     let mouseY = 0;
-    let ringX = 0;
-    let ringY = 0;
+
+    const colors = ['#6366f1', '#a855f7', '#ec4899', '#8b5cf6'];
+
+    function resize() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    }
+    resize();
+    window.addEventListener('resize', resize);
+
+    const particleCount = 20;
+    for (let i = 0; i < particleCount; i++) {
+      particles.push({
+        x: Math.random() * canvas.width,
+        y: Math.random() * canvas.height,
+        vx: (Math.random() - 0.5) * 0.5,
+        vy: (Math.random() - 0.5) * 0.5,
+        size: Math.random() * 3 + 1,
+        alpha: Math.random() * 0.5 + 0.2,
+        color: colors[Math.floor(Math.random() * colors.length)],
+      });
+    }
 
     const onMouseMove = (e: MouseEvent) => {
       mouseX = e.clientX;
       mouseY = e.clientY;
-      dot.style.transform = `translate(${mouseX - 4}px, ${mouseY - 4}px)`;
     };
 
-    const animate = () => {
-      ringX += (mouseX - ringX) * 0.08;
-      ringY += (mouseY - ringY) * 0.08;
-      ring.style.transform = `translate(${ringX - 16}px, ${ringY - 16}px)`;
-      requestAnimationFrame(animate);
-    };
+    function draw() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      for (const p of particles) {
+        const dx = mouseX - p.x;
+        const dy = mouseY - p.y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+
+        if (dist < 150) {
+          const force = (150 - dist) / 150;
+          p.vx += (dx / dist) * force * 0.05;
+          p.vy += (dy / dist) * force * 0.05;
+        }
+
+        p.vx *= 0.95;
+        p.vy *= 0.95;
+
+        p.x += p.vx;
+        p.y += p.vy;
+
+        if (p.x < 0) p.x = 0;
+        if (p.x > canvas.width) p.x = canvas.width;
+        if (p.y < 0) p.y = 0;
+        if (p.y > canvas.height) p.y = canvas.height;
+
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+        ctx.fillStyle = p.color;
+        ctx.globalAlpha = p.alpha;
+        ctx.fill();
+
+        ctx.shadowColor = p.color;
+        ctx.shadowBlur = 10;
+        ctx.fill();
+        ctx.shadowBlur = 0;
+        ctx.globalAlpha = 1;
+      }
+
+      animationId = requestAnimationFrame(draw);
+    }
 
     window.addEventListener('mousemove', onMouseMove, { passive: true });
-    requestAnimationFrame(animate);
+    draw();
 
     return () => {
+      cancelAnimationFrame(animationId);
       window.removeEventListener('mousemove', onMouseMove);
+      window.removeEventListener('resize', resize);
     };
   }, []);
 
   return (
-    <>
-      {/* Small dot */}
-      <div
-        ref={dotRef}
-        className="fixed top-0 left-0 pointer-events-none z-[9999] w-2 h-2 rounded-full bg-accent-hover/70 mix-blend-difference hidden sm:block"
-        style={{ willChange: 'transform' }}
-      />
-      {/* Ring */}
-      <div
-        ref={ringRef}
-        className="fixed top-0 left-0 pointer-events-none z-[9998] w-8 h-8 rounded-full border border-accent-hover/30 hidden sm:block"
-        style={{ willChange: 'transform' }}
-      />
-    </>
+    <canvas
+      ref={canvasRef}
+      className="fixed inset-0 pointer-events-none z-[9999]"
+      aria-hidden="true"
+    />
   );
 }

@@ -1,46 +1,48 @@
-# Astro Starter Kit: Basics
+# liukeyou's Blog
 
-```sh
-pnpm create astro@latest -- --template basics
-```
+我的个人博客，使用 Astro 构建。
 
-> 🧑‍🚀 **Seasoned astronaut?** Delete this file. Have fun!
-
-## 🚀 Project Structure
-
-Inside of your Astro project, you'll see the following folders and files:
+## 📁 项目结构
 
 ```text
 /
 ├── public/
 │   └── favicon.svg
 ├── src
-│   ├── assets
-│   │   └── astro.svg
-│   ├── components
-│   │   └── Welcome.astro
-│   ├── layouts
-│   │   └── Layout.astro
-│   └── pages
-│       └── index.astro
+│   ├── components/
+│   │   ├── animations/    # 动画组件
+│   │   ├── blog/          # 博客相关组件
+│   │   ├── layout/        # 布局组件
+│   │   └── ui/            # UI 组件
+│   ├── content/
+│   │   └── blog/          # 博客文章（MDX 格式）
+│   ├── layouts/           # 页面布局模板
+│   ├── pages/             # 页面路由
+│   └── styles/            # 全局样式
 └── package.json
 ```
 
-To learn more about the folder structure of an Astro project, refer to [our guide on project structure](https://docs.astro.build/en/basics/project-structure/).
+## 🧑‍💻 技术栈
 
-## 🧞 Commands
+- **框架**: Astro 7.x
+- **UI 交互**: React 19
+- **样式**: Tailwind CSS 4.x
+- **动画**: Framer Motion + GSAP + Lenis
+- **部署**: GitHub Pages
 
-All commands are run from the root of the project, from a terminal:
+## ⚙️ 命令
 
-| Command                   | Action                                           |
-| :------------------------ | :----------------------------------------------- |
-| `pnpm install`             | Installs dependencies                            |
-| `pnpm dev`             | Starts local dev server at `localhost:4321`      |
-| `pnpm build`           | Build your production site to `./dist/`          |
-| `pnpm preview`         | Preview your build locally, before deploying     |
-| `pnpm astro ...`       | Run CLI commands like `astro add`, `astro check` |
-| `pnpm astro -- --help` | Get help using the Astro CLI                     |
+所有命令都从项目根目录运行：
 
-## 👀 Want to learn more?
+| 命令 | 说明 |
+| :--- | :--- |
+| `npm install` | 安装依赖 |
+| `npm run dev` | 启动本地开发服务器 |
+| `npm run build` | 构建生产版本到 `./dist/` |
+| `npm run preview` | 本地预览构建结果 |
 
-Feel free to check [our documentation](https://docs.astro.build) or jump into our [Discord server](https://astro.build/chat).
+## 📝 内容说明
+
+这是一个个人博客，用于分享和记录一些内容，包括技术思考、工作复盘、工具链技巧和阅读笔记。
+
+前端开发相关内容请访问我的 [VibeCoding](https://vibecoding.cn) 账号。

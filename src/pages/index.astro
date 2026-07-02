@@ -2,16 +2,11 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import ParticleField from '../components/animations/ParticleField';
 import ScrollReveal from '../components/animations/ScrollReveal.astro';
-import PostCard from '../components/blog/PostCard.astro';
-import { getCollection } from 'astro:content';
 
-const posts = (await getCollection('blog'))
-  .filter((p) => !p.data.draft)
-  .sort((a, b) => b.data.publishedAt.getTime() - a.data.publishedAt.getTime())
-  .slice(0, 4);
+const posts = [];
 ---
 
-<BaseLayout title="liukeyou — Developer & Blogger" description="一个热爱技术、写作和创造的个人博客">
+<BaseLayout title="liukeyou — Developer & Creator" description="一个热爱技术、写作和创造的个人博客">
   <ParticleField client:load />
 
   <div class="relative z-10">
@@ -27,15 +22,15 @@ const posts = (await getCollection('blog'))
           </h1>
           <p class="text-lg sm:text-xl text-text-secondary leading-relaxed mb-8">
             一个热爱技术的开发者。<br />
-            在这里记录我的思考和探索，用文字与代码构建有趣的东西。
+            在这里记录我的思考和探索，分享技术心得与工作复盘。
           </p>
 
           <div class="flex items-center gap-4">
             <a
-              href="/blog"
+              href="/about"
               class="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-accent text-white font-medium text-sm hover:bg-accent-hover transition-all hover:scale-105 active:scale-95"
             >
-              阅读博客
+              了解更多
               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <line x1="5" y1="12" x2="19" y2="12"></line>
                 <polyline points="12 5 19 12 12 19"></polyline>
@@ -56,34 +51,5 @@ const posts = (await getCollection('blog'))
         </div>
       </ScrollReveal>
     </section>
-
-    <!-- Recent posts -->
-    {
-      posts.length > 0 && (
-        <section class="mx-auto max-w-5xl px-6 pb-24">
-          <ScrollReveal>
-            <div class="flex items-center justify-between mb-8">
-              <h2 class="text-2xl font-bold">
-                最新文章
-              </h2>
-              <a
-                href="/blog"
-                class="text-sm text-accent-hover hover:underline underline-offset-4"
-              >
-                查看全部 →
-              </a>
-            </div>
-          </ScrollReveal>
-
-          <div class="grid gap-4 sm:grid-cols-2">
-            {posts.map((post, i) => (
-              <ScrollReveal delay={i * 0.1}>
-                <PostCard post={post} />
-              </ScrollReveal>
-            ))}
-          </div>
-        </section>
-      )
-    }
   </div>
 </BaseLayout>
