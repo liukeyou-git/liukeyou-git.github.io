@@ -111,7 +111,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const register = async (data: RegisterFormData) => {
     if (!supabase) return;
     setAuthState((prev) => ({ ...prev, isLoading: true, error: null }));
-    const { error: authError } = await supabase.auth.signUp({
+    const { user, session, error: authError } = await supabase.auth.signUp({
       email: data.email,
       password: data.password,
     });
@@ -120,15 +120,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return;
     }
 
-    const { data: { session } } = await supabase.auth.getSession();
-    if (session) {
+    if (user && session) {
       const { error: profileError } = await supabase.from('profiles').insert({
-        id: session.user.id,
+        id: user.id,
         username: data.username,
       });
       if (profileError) {
         setAuthState((prev) => ({ ...prev, isLoading: false, error: profileError.message }));
+        return;
       }
+      setAuthState((prev) => ({ ...prev, isLoading: false }));
+    } else if (user && !session) {
+      setAuthState((prev) => ({
+        ...prev,
+        isLoading: false,
+        error: '注册成功，请检查邮箱验证后再登录',
+      }));
+    } else {
+      setAuthState((prev) => ({ ...prev, isLoading: false, error: '注册失败，请重试' }));
     }
   };
 
