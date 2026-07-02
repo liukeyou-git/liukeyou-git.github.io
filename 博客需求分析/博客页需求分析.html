@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>博客系统需求分析 - 支持评论&多用户发文</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', system-ui, sans-serif;
+        }
+        body {
+            background: #0f0f0f;
+            color: #f5f5f5;
+            line-height: 1.8;
+            padding: 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        header {
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            padding-bottom: 1rem;
+            margin-bottom: 2rem;
+        }
+        h1 {
+            background: linear-gradient(135deg, #6366f1, #a855f7, #ec4899);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+        h2 {
+            font-size: 1.5rem;
+            margin: 2rem 0 1rem;
+            color: #818cf8;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid rgba(255,255,255,0.08);
+        }
+        h3 {
+            font-size: 1.25rem;
+            margin: 1.5rem 0 0.75rem;
+            color: #a855f7;
+        }
+        p, li {
+            color: #a3a3a3;
+            margin-bottom: 0.75rem;
+        }
+        ul, ol {
+            padding-left: 1.5rem;
+            margin-bottom: 1rem;
+        }
+        .section {
+            background: #1a1a1a;
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            border: 1px solid rgba(255,255,255,0.06);
+        }
+        .highlight {
+            color: #ec4899;
+            font-weight: 600;
+        }
+        .layout-diagram {
+            background: #252525;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            margin: 1rem 0;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.875rem;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1.5rem 0;
+            background: #252525;
+            border-radius: 0.5rem;
+            overflow: hidden;
+        }
+        th, td {
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+            text-align: left;
+        }
+        th {
+            background: #333;
+            color: #f5f5f5;
+        }
+        td {
+            color: #a3a3a3;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>博客系统需求分析文档</h1>
+        <p>核心诉求：支持访问者评论留言 + 多用户发布文章</p>
+    </header>
+
+    <div class="section">
+        <h2>一、核心需求拆解</h2>
+        
+        <h3>1. 角色划分</h3>
+        <ul>
+            <li><span class="highlight">游客</span>：浏览文章、发布评论、回复评论、点赞评论</li>
+            <li><span class="highlight">普通作者</span>：注册/登录、发布/编辑/删除自己的文章、管理自己文章的评论</li>
+            <li><span class="highlight">管理员</span>：审核文章、审核评论、管理用户、系统配置</li>
+        </ul>
+
+        <h3>2. 功能需求</h3>
+        <h4>（1）文章管理模块</h4>
+        <ul>
+            <li>多用户发文：支持富文本/Markdown编辑、封面上传、分类/标签设置、草稿保存</li>
+            <li>文章展示：列表页（按时间/热度/分类筛选）、详情页（排版美观、代码高亮）</li>
+            <li>文章操作：编辑/删除（作者）、审核/下架（管理员）、搜索/收藏/分享</li>
+        </ul>
+
+        <h4>（2）评论互动模块</h4>
+        <ul>
+            <li>评论发布：游客/登录用户均可发布，支持表情、图片、@用户，验证码防刷</li>
+            <li>评论展示：按时间/热度排序、层级展示回复、显示评论者信息/时间</li>
+            <li>评论管理：作者/管理员可删除违规评论、回复评论、置顶精选评论</li>
+        </ul>
+
+        <h4>（3）用户系统模块</h4>
+        <ul>
+            <li>基础功能：注册、登录（账号密码/第三方）、个人信息编辑、密码找回</li>
+            <li>个人中心：我的文章、我的评论、收藏夹、消息通知（评论回复/文章审核）</li>
+        </ul>
+
+        <h3>3. 非功能需求</h3>
+        <ul>
+            <li><span class="highlight">性能</span>：页面加载速度＜2s，支持平滑滚动/页面过渡动画（沿用现有动效体系）</li>
+            <li><span class="highlight">兼容性</span>：适配PC/移动端，主流浏览器（Chrome/Firefox/Safari）</li>
+            <li><span class="highlight">安全性</span>：评论/文章内容审核、XSS/CSRF防护、用户密码加密存储</li>
+            <li><span class="highlight">体验</span>：延续现有暗黑风格视觉体系，粒子动效/鼠标跟随等交互保留</li>
+        </ul>
+    </div>
+
+    <div class="section">
+        <h2>二、页面结构设计</h2>
+        
+        <h3>1. 全局布局（沿用现有视觉体系）</h3>
+        <div class="layout-diagram">
+<!-- 全局布局结构 -->
+┌─────────────────────────────────────────┐
+│  Header（导航栏：Logo/菜单/搜索/登录）   │
+├─────────────────────────────────────────┤
+│  Main Content                           │
+│  ├── 左侧：文章列表/分类/热门标签       │
+│  ├── 中间：核心内容（文章/评论/发文页） │
+│  └── 右侧：推荐作者/热门文章/公告       │
+├─────────────────────────────────────────┤
+│  Footer（版权/联系方式/备案信息）        │
+└─────────────────────────────────────────┘
+        </div>
+
+        <h3>2. 核心页面详情</h3>
+        <table>
+            <tr>
+                <th>页面名称</th>
+                <th>核心结构</th>
+                <th>关键交互</th>
+            </tr>
+            <tr>
+                <td>首页（文章列表）</td>
+                <td>
+                    1. 顶部Banner（粒子动效背景）<br>
+                    2. 筛选栏（分类/标签/时间）<br>
+                    3. 文章卡片列表（封面/标题/摘要/作者/阅读量）<br>
+                    4. 分页/加载更多
+                </td>
+                <td>
+                    - 平滑滚动（沿用SmoothScroll组件）<br>
+                    - 卡片hover动效<br>
+                    - 筛选条件切换无刷新更新列表
+                </td>
+            </tr>
+            <tr>
+                <td>文章详情页</td>
+                <td>
+                    1. 文章头部（标题/作者/发布时间/分类标签）<br>
+                    2. 文章内容（富文本排版、代码高亮）<br>
+                    3. 文章操作（点赞/收藏/分享）<br>
+                    4. 评论区（评论输入框+评论列表）
+                </td>
+                <td>
+                    - 页面过渡动画（沿用PageTransition）<br>
+                    - 评论实时加载/提交<br>
+                    - 回复评论层级展开/收起
+                </td>
+            </tr>
+            <tr>
+                <td>发文页面</td>
+                <td>
+                    1. 编辑区（Markdown/富文本切换）<br>
+                    2. 配置区（标题/封面/分类/标签/草稿保存）<br>
+                    3. 预览区（实时预览排版效果）<br>
+                    4. 操作区（发布/保存草稿/返回）
+                </td>
+                <td>
+                    - 编辑器实时预览<br>
+                    - 自动保存草稿（本地存储+接口同步）<br>
+                    - 发布前表单校验
+                </td>
+            </tr>
+            <tr>
+                <td>个人中心</td>
+                <td>
+                    1. 侧边导航（我的文章/我的评论/个人信息）<br>
+                    2. 内容区（对应导航的列表/表单）<br>
+                    3. 操作按钮（编辑/删除/审核状态查看）
+                </td>
+                <td>
+                    - 标签页切换动画<br>
+                    - 文章/评论批量操作<br>
+                    - 消息通知红点提醒
+                </td>
+            </tr>
+        </table>
+    </div>
+
+    <div class="section">
+        <h2>三、交互与视觉规范</h2>
+        
+        <h3>1. 视觉延续性</h3>
+        <ul>
+            <li>配色：沿用现有全局样式中的变量（--color-bg-primary/secondary、--color-accent等）</li>
+            <li>动效：保留MouseFollower/ParticleField粒子动效，统一动画曲线（ease: [0.25, 0.46, 0.45, 0.94]）</li>
+            <li>组件风格：按钮/输入框/卡片统一使用glass磨砂效果、圆角（0.75rem）、轻微边框</li>
+        </ul>
+
+        <h3>2. 评论交互细节</h3>
+        <ul>
+            <li>评论输入框：聚焦时展开（高度变化动画），支持表情面板弹出/收起</li>
+            <li>提交状态：加载动画+提交成功/失败提示（无刷新toast）</li>
+            <li>评论列表：新评论自动滚动到视图+淡入动画，支持按“最新/最热”切换排序</li>
+        </ul>
+
+        <h3>3. 发文交互细节</h3>
+        <ul>
+            <li>编辑器：Markdown/富文本切换无刷新，内容自动同步</li>
+            <li>封面上传：拖拽/点击上传，预览图裁剪，上传进度提示</li>
+            <li>草稿保存：每30s自动保存，页面离开前提示未保存内容</li>
+        </ul>
+    </div>
+
+    <div class="section">
+        <h2>四、技术实现要点</h2>
+        <ul>
+            <li>前端框架：基于现有React/Astro体系开发，复用现有动画组件（SmoothScroll/PageTransition等）</li>
+            <li>编辑器：集成Markdown编辑器（如MDX/Editor.md），支持代码高亮、图片上传</li>
+            <li>数据交互：使用Fetch/axios实现接口请求，评论/文章提交采用FormData+进度反馈</li>
+            <li>状态管理：用户登录态（localStorage+token校验）、草稿状态（localStorage）</li>
+            <li>防刷机制：评论发布添加验证码（滑块/图形）、接口限流（IP+频率）</li>
+        </ul>
+    </div>
+
+    <div class="section">
+        <h2>五、扩展建议</h2>
+        <ul>
+            <li>评论功能：支持表情包、图片上传、评论点赞、评论举报</li>
+            <li>文章功能：支持阅读量统计、相关文章推荐、目录导航</li>
+            <li>用户体验：夜间模式切换、字体大小调整、移动端适配优化</li>
+            <li>性能优化：文章内容懒加载、评论分页加载、静态资源CDN</li>
+        </ul>
+    </div>
+</body>
+</html>
