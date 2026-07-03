@@ -1,8 +1,9 @@
 ---
 title: '博客网站技术栈介绍'
-description: '本文详细介绍了这个博客网站使用的技术栈，包括前端框架、样式方案、动画库、部署方式等。'
+description: '本文详细介绍了这个博客网站使用的技术栈，包括前端框架、样式方案、动画库、Supabase 后端服务以及部署方式。'
 publishedAt: 2026-07-02
-tags: ['技术栈', 'Astro', 'React', 'Tailwind CSS']
+updatedAt: 2026-07-04
+tags: ['技术栈', 'Astro', 'React', 'Tailwind CSS', 'Supabase']
 ---
 
 ## 前言
@@ -28,6 +29,8 @@ tags: ['技术栈', 'Astro', 'React', 'Tailwind CSS']
 - 鼠标跟随粒子效果
 - 页面过渡动画（Framer Motion）
 - 目录导航（Table of Contents）
+- 文章点赞与分享（PostActions）
+- 评论区（CommentSection）
 
 ### Tailwind CSS 4.x
 
@@ -46,20 +49,60 @@ tags: ['技术栈', 'Astro', 'React', 'Tailwind CSS']
 - **GSAP**：高性能动画引擎，用于复杂的时间线动画
 - **Lenis**：平滑滚动效果，提供丝滑的滚动体验
 
+## 后端服务：Supabase
+
+博客的动态功能（用户认证、评论、点赞）全部由 [Supabase](https://supabase.com) 提供。这是一个开源的 Firebase 替代方案，基于 PostgreSQL 构建。
+
+### 主要能力
+
+- **Auth 认证**：基于 JWT 的用户注册、登录、会话管理
+- **PostgreSQL 数据库**：存储用户资料（profiles）、评论（comments）、点赞（post_likes）
+- **REST API**：通过 PostgREST 自动生成 RESTful 接口
+- **行级安全（RLS）**：在数据库层面控制数据访问权限
+- **实时订阅**：基于 WebSocket，评论有新回复时自动更新
+
+### 数据库表设计
+
+| 表名 | 说明 |
+| --- | --- |
+| `profiles` | 用户资料（与 auth.users 关联） |
+| `comments` | 文章评论，支持嵌套回复（parent_id） |
+| `post_likes` | 文章点赞记录 |
+
+为了支持以文章 slug（如 `tech-stack-intro`）作为 `post_id`，`comments` 表的 `post_id` 和 `author_id` 字段使用了 `TEXT` 类型并移除了外键约束。
+
+### 关键实现
+
+- **AuthContext 单例**：使用模块级单例模式，多个 `AuthProvider` 共享同一份认证状态，避免重复请求
+- **maybeSingle 查询**：使用 `maybeSingle()` 替代 `single()`，优雅处理 profile 缺失的情况
+- **手动创建 profile**：用户登录后若 profile 不存在则自动创建
+- **分离查询 + 前端合并**：评论和作者信息分开查询，前端按 `author_id` 合并
+
 ## 项目结构
 
 ```
 src/
 ├── components/       # 组件目录
 │   ├── animations/  # 动画组件（粒子背景、页面过渡等）
-│   ├── blog/        # 博客相关组件（文章卡片、目录等）
+│   ├── auth/        # 登录注册弹窗
+│   ├── blog/        # 博客相关组件（评论、点赞、目录等）
 │   ├── layout/      # 布局组件（Header、Footer）
-│   └── ui/          # UI 组件（主题切换等）
+│   └── AppRoot.tsx  # 全局 Provider 入口
+├── contexts/         # React Context（AuthContext 等）
 ├── layouts/         # 页面布局模板
+├── lib/             # 通用工具（supabase 客户端）
 ├── pages/           # 页面路由
 ├── content/         # 博客文章内容（MDX 格式）
 └── styles/          # 全局样式
 ```
+
+## 已实现的功能
+
+- **用户注册 / 登录**：基于 Supabase Auth，支持邮箱密码登录
+- **文章评论**：支持一级评论与回复，实时同步新评论
+- **文章点赞**：登录用户可点赞，自动乐观更新
+- **分享链接**：一键复制当前文章 URL 到剪贴板
+- **未登录拦截**：点赞、评论、回复时自动弹出登录窗口
 
 ## 部署方式
 
@@ -70,17 +113,16 @@ src/
 3. 将构建产物部署到 GitHub Pages
 4. 访问 https://liukeyou-git.github.io 查看博客
 
+环境变量 `PUBLIC_SUPABASE_URL` 和 `PUBLIC_SUPABASE_ANON_KEY` 配置在 GitHub Secrets 中。
+
 ## 未来计划
 
-根据需求分析，未来可能会添加以下功能：
-
-- **评论系统**：支持访客评论和回复
 - **多用户发文**：支持注册用户发布文章
 - **个人中心**：用户管理自己的文章和评论
 - **搜索功能**：全文搜索文章内容
 
 ## 总结
 
-这个博客网站采用了现代化的前端技术栈，注重性能和用户体验。通过 Astro 的静态生成能力，保证了页面加载速度；通过 React 和动画库，提供了丰富的交互效果；通过 Tailwind CSS，实现了统一的视觉风格。
+这个博客网站采用了现代化的前端技术栈 + Serverless 后端，注重性能和用户体验。前端通过 Astro 的静态生成能力保证页面加载速度；通过 React 和动画库提供丰富的交互效果；通过 Tailwind CSS 实现统一的视觉风格。后端通过 Supabase 快速构建了认证、数据库、实时订阅等能力，零运维成本即可支撑完整的 UGC 场景。
 
 如果你对这个项目感兴趣，可以访问我的 [GitHub](https://github.com/liukeyou-git) 获取源代码。
