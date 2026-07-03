@@ -73,9 +73,12 @@ function WriteInner() {
 }
 
 export default function Write() {
+  // client:only 创建独立 React 根，必须自带 AuthProvider
   return (
-    <AuthGate message="请先登录后发布文章">
-      <WriteInner />
-    </AuthGate>
+    <AuthProvider>
+      <AuthGate message="请先登录后发布文章">
+        <WriteInner />
+      </AuthGate>
+    </AuthProvider>
   );
 }

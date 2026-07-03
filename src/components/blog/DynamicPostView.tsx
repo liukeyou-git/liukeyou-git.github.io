@@ -3,7 +3,7 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import rehypeHighlight from 'rehype-highlight';
 import { supabase } from '../../lib/supabase';
-import { useAuth } from '../../contexts/AuthContext';
+import { useAuth, AuthProvider } from '../../contexts/AuthContext';
 import PostActions from './PostActions';
 import CommentSection from './CommentSection';
 import AuthModal from '../auth/AuthModal';
@@ -13,7 +13,16 @@ interface DynamicPostViewProps {
   postId: string;
 }
 
-export default function DynamicPostView({ postId }: DynamicPostViewProps) {
+export default function DynamicPostView(props: DynamicPostViewProps) {
+  // client:only 创建独立 React 根，必须自带 AuthProvider
+  return (
+    <AuthProvider>
+      <DynamicPostViewInner {...props} />
+    </AuthProvider>
+  );
+}
+
+function DynamicPostViewInner({ postId }: DynamicPostViewProps) {
   const { authState } = useAuth();
   const [post, setPost] = useState<Post | null>(null);
   const [author, setAuthor] = useState<User | null>(null);

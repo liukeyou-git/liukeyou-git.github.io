@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../../lib/supabase';
-import { useAuth } from '../../contexts/AuthContext';
+import { useAuth, AuthProvider } from '../../contexts/AuthContext';
 import AuthGate from '../auth/AuthGate';
 import type { Post } from '../../types';
 
