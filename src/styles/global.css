@@ -152,6 +152,81 @@ pre.astro-code {
   border: 1px solid rgba(255, 255, 255, 0.06);
 }
 
+/* ===== 卡片悬停光效 ===== */
+.card-glow::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    600px circle at var(--mouse-x, 50%) var(--mouse-y, 50%),
+    rgba(139, 92, 246, 0.08),
+    transparent 40%
+  );
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+  border-radius: inherit;
+  z-index: 0;
+}
+
+.card-glow:hover::before {
+  opacity: 1;
+}
+
+.card-glow > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* ===== 按钮和交互元素动画 ===== */
+.interactive-glow {
+  position: relative;
+  overflow: hidden;
+}
+
+.interactive-glow::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    200px circle at var(--mouse-x, 50%) var(--mouse-y, 50%),
+    rgba(139, 92, 246, 0.15),
+    transparent 40%
+  );
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+}
+
+.interactive-glow:hover::after {
+  opacity: 1;
+}
+
+/* ===== 点赞按钮点击动画 ===== */
+.like-button:active svg {
+  transform: scale(1.3);
+}
+
+/* ===== 回复按钮下划线动画 ===== */
+.reply-button {
+  position: relative;
+}
+
+.reply-button::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  width: 0;
+  height: 1px;
+  background: var(--color-accent);
+  transition: width 0.3s ease;
+}
+
+.reply-button:hover::after {
+  width: 100%;
+}
+
 /* ===== Lenis 平滑滚动 ===== */
 html.lenis,
 html.lenis body {

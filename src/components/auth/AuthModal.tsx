@@ -1,15 +1,22 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import type { LoginFormData, RegisterFormData } from '../../types';
 
 interface AuthModalProps {
   isOpen: boolean;
   onClose: () => void;
+  defaultTab?: 'login' | 'register';
 }
 
-export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
-  const [isLogin, setIsLogin] = useState(true);
+export default function AuthModal({ isOpen, onClose, defaultTab = 'login' }: AuthModalProps) {
+  const [isLogin, setIsLogin] = useState(defaultTab === 'login');
   const { authState, login, register } = useAuth();
+
+  useEffect(() => {
+    if (isOpen) {
+      setIsLogin(defaultTab === 'login');
+    }
+  }, [isOpen, defaultTab]);
 
   const [loginData, setLoginData] = useState<LoginFormData>({ email: '', password: '' });
   const [registerData, setRegisterData] = useState<RegisterFormData>({ email: '', username: '', password: '' });
