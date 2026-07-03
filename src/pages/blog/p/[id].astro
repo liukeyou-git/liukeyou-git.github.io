@@ -1,0 +1,40 @@
+---
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import DynamicPostView from '../../../components/blog/DynamicPostView';
+
+// 构建时拉取所有已发布文章的 ID，生成静态路径
+// 新发布的文章需要重新部署才能访问
+export async function getStaticPaths() {
+  const supabaseUrl = import.meta.env.PUBLIC_SUPABASE_URL;
+  const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY;
+
+  if (!supabaseUrl || !supabaseAnonKey) {
+    return [];
+  }
+
+  try {
+    const res = await fetch(
+      `${supabaseUrl}/rest/v1/posts?select=id&status=eq.published`,
+      {
+        headers: {
+          apikey: supabaseAnonKey,
+          Authorization: `Bearer ${supabaseAnonKey}`,
+        },
+      }
+    );
+    if (!res.ok) {
+      console.warn(`构建时拉取文章 ID 失败: ${res.status}`);
+      return [];
+    }
+    const posts = (await res.json()) as Array<{ id: string }>;
+    return posts.map((p) => ({ params: { id: p.id } }));
+  } catch (err) {
+    console.warn('构建时拉取文章 ID 异常:', err);
+    return [];
+  }
+}
+---
+
+<BaseLayout title="文章 — liukeyou" description="用户发布的文章">
+  <DynamicPostView client:only="react" postId={Astro.params.id} />
+</BaseLayout>

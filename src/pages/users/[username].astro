@@ -1,0 +1,41 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import UserProfileView from '../../components/blog/UserProfileView';
+
+// 构建时拉取所有 username，生成静态路径
+export async function getStaticPaths() {
+  const supabaseUrl = import.meta.env.PUBLIC_SUPABASE_URL;
+  const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY;
+
+  if (!supabaseUrl || !supabaseAnonKey) {
+    return [];
+  }
+
+  try {
+    const res = await fetch(
+      `${supabaseUrl}/rest/v1/profiles?select=username`,
+      {
+        headers: {
+          apikey: supabaseAnonKey,
+          Authorization: `Bearer ${supabaseAnonKey}`,
+        },
+      }
+    );
+    if (!res.ok) {
+      console.warn(`构建时拉取 username 失败: ${res.status}`);
+      return [];
+    }
+    const profiles = (await res.json()) as Array<{ username: string }>;
+    return profiles
+      .filter((p) => p.username)
+      .map((p) => ({ params: { username: p.username } }));
+  } catch (err) {
+    console.warn('构建时拉取 username 异常:', err);
+    return [];
+  }
+}
+---
+
+<BaseLayout title="用户主页 — liukeyou" description="查看用户发布的文章">
+  <UserProfileView client:only="react" username={Astro.params.username} />
+</BaseLayout>

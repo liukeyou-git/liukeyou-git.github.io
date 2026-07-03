@@ -17,6 +17,19 @@ export interface Post {
   status: 'draft' | 'published';
   published_at?: string;
   updated_at?: string;
+  created_at?: string;
+  author?: User;
+}
+
+// 编辑器用的文章草稿
+export interface PostDraft {
+  id?: string;
+  title: string;
+  description: string;
+  content: string;
+  tags: string[];
+  cover_url: string;
+  status: 'draft' | 'published';
 }
 
 export interface Comment {

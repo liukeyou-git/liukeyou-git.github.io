@@ -1,15 +1,15 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
-import PostCard from '../../components/blog/PostCard.astro';
 import ScrollReveal from '../../components/animations/ScrollReveal.astro';
+import MixedPostList from '../../components/blog/MixedPostList';
 import { getCollection } from 'astro:content';
 
-const allPosts = (await getCollection('blog'))
+const mdxPosts = (await getCollection('blog'))
   .filter((p) => !p.data.draft)
   .sort((a, b) => b.data.publishedAt.getTime() - a.data.publishedAt.getTime());
 
 const tagCounts: Record<string, number> = {};
-for (const post of allPosts) {
+for (const post of mdxPosts) {
   for (const tag of post.data.tags) {
     tagCounts[tag] = (tagCounts[tag] || 0) + 1;
   }
@@ -17,9 +17,20 @@ for (const post of allPosts) {
 const allTags = Object.entries(tagCounts).sort(([, a], [, b]) => b - a);
 
 const selectedTag = Astro.url.searchParams.get('tag') || '';
-const posts = selectedTag
-  ? allPosts.filter((p) => p.data.tags.includes(selectedTag))
-  : allPosts;
+const filteredMdxPosts = selectedTag
+  ? mdxPosts.filter((p) => p.data.tags.includes(selectedTag))
+  : mdxPosts;
+
+const initialPosts = filteredMdxPosts.map((post) => ({
+  id: post.id,
+  type: 'mdx' as const,
+  title: post.data.title,
+  description: post.data.description,
+  tags: post.data.tags,
+  date: post.data.publishedAt.toISOString(),
+  href: `/blog/${post.id}`,
+  cover: post.data.cover,
+}));
 ---
 
 <BaseLayout title="Blog — liukeyou" description="技术文章和思考">
@@ -27,7 +38,7 @@ const posts = selectedTag
     <ScrollReveal>
       <h1 class="text-4xl sm:text-5xl font-black gradient-text mb-4">Blog</h1>
       <p class="text-text-secondary mb-10">
-        共 {allPosts.length} 篇文章，持续更新中。
+        共 {mdxPosts.length}+ 篇文章，持续更新中。
       </p>
     </ScrollReveal>
 
@@ -60,16 +71,10 @@ const posts = selectedTag
       </ScrollReveal>
     )}
 
-    {posts.length === 0 ? (
+    {filteredMdxPosts.length === 0 ? (
       <p class="text-text-secondary text-center py-20">暂无文章。</p>
     ) : (
-      <div class="grid gap-4 sm:grid-cols-2">
-        {posts.map((post, i) => (
-          <ScrollReveal delay={i * 0.05}>
-            <PostCard post={post} />
-          </ScrollReveal>
-        ))}
-      </div>
+      <MixedPostList client:load initialPosts={initialPosts} />
     )}
   </div>
 </BaseLayout>

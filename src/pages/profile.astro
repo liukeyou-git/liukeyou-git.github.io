@@ -1,0 +1,10 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Profile from '../components/blog/Profile';
+---
+
+<BaseLayout title="个人中心 — liukeyou" description="管理我的文章">
+  <div class="mx-auto max-w-3xl px-6 pb-24">
+    <Profile client:only="react" />
+  </div>
+</BaseLayout>

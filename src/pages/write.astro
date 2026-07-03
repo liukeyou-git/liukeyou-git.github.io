@@ -1,0 +1,17 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Write from '../components/blog/Write';
+---
+
+<BaseLayout title="写文章 — liukeyou" description="发布新文章">
+  <div class="mx-auto max-w-3xl px-6 pb-24">
+    <div class="mb-8">
+      <h1 class="text-3xl sm:text-4xl font-black gradient-text mb-2">
+        {new URLSearchParams(Astro.url.searchParams.toString()).get('id') ? '编辑文章' : '写文章'}
+      </h1>
+      <p class="text-text-secondary text-sm">支持 Markdown 语法 · GFM · 代码高亮</p>
+    </div>
+
+    <Write client:only="react" />
+  </div>
+</BaseLayout>
