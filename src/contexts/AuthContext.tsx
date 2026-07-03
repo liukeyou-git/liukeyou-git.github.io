@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
+import { createContext, useContext, useEffect, useState, ReactNode, useRef } from 'react';
 import { supabase } from '../lib/supabase';
 import type { User, AuthState, LoginFormData, RegisterFormData } from '../types';
 
@@ -12,149 +12,175 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-export function AuthProvider({ children }: { children: ReactNode }) {
-  const [authState, setAuthState] = useState<AuthState>({
-    user: null,
-    isLoading: true,
-    error: null,
-  });
+// ========== 模块级单例 ==========
+// 多个 AuthProvider 共享同一份认证状态，避免重复请求
+type Listener = (state: AuthState) => void;
 
-  const isEnabled = supabase !== null;
+interface AuthStore {
+  state: AuthState;
+  initialized: boolean;
+  initPromise: Promise<void> | null;
+  listeners: Set<Listener>;
+}
 
-  useEffect(() => {
+const globalAny = globalThis as unknown as { __authStore?: AuthStore };
+
+function getStore(): AuthStore {
+  if (!globalAny.__authStore) {
+    globalAny.__authStore = {
+      state: { user: null, isLoading: true, error: null },
+      initialized: false,
+      initPromise: null,
+      listeners: new Set(),
+    };
+  }
+  return globalAny.__authStore;
+}
+
+function setGlobalState(newState: AuthState) {
+  const store = getStore();
+  store.state = newState;
+  store.listeners.forEach((listener) => listener(newState));
+}
+
+async function fetchProfile(userId: string, email: string): Promise<User> {
+  if (!supabase) throw new Error('Supabase not initialized');
+
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('*')
+    .eq('id', userId)
+    .maybeSingle();
+
+  if (profile) {
+    return {
+      id: profile.id,
+      email: email,
+      username: profile.username,
+      avatar_url: profile.avatar_url,
+      bio: profile.bio,
+    };
+  }
+
+  // Profile 不存在则自动创建
+  const username = email.split('@')[0] || 'user';
+  await supabase.from('profiles').insert({ id: userId, username });
+  return { id: userId, email, username };
+}
+
+async function initAuth(): Promise<void> {
+  const store = getStore();
+  if (store.initialized) return;
+  if (store.initPromise) return store.initPromise;
+
+  store.initPromise = (async () => {
     if (!supabase) {
-      setAuthState({ user: null, isLoading: false, error: null });
+      setGlobalState({ user: null, isLoading: false, error: null });
+      store.initialized = true;
       return;
     }
 
-    const checkAuth = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session) {
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', session.user.id)
-          .maybeSingle();
-
-        let userData;
-        if (profile) {
-          userData = {
-            id: profile.id,
-            email: session.user.email || '',
-            username: profile.username,
-            avatar_url: profile.avatar_url,
-            bio: profile.bio,
-          };
-        } else {
-          // Profile 不存在，自动创建
-          const username = session.user.email?.split('@')[0] || 'user';
-          await supabase.from('profiles').insert({
-            id: session.user.id,
-            username: username,
-          });
-          userData = {
-            id: session.user.id,
-            email: session.user.email || '',
-            username: username,
-          };
-        }
-
-        setAuthState({
-          user: userData,
-          isLoading: false,
-          error: null,
-        });
-      } else {
-        setAuthState({ user: null, isLoading: false, error: null });
+    // 1. 检查当前 session
+    const { data: { session } } = await supabase.auth.getSession();
+    if (session) {
+      try {
+        const user = await fetchProfile(session.user.id, session.user.email || '');
+        setGlobalState({ user, isLoading: false, error: null });
+      } catch (err) {
+        console.error('加载 profile 失败:', err);
+        setGlobalState({ user: null, isLoading: false, error: null });
       }
-    };
+    } else {
+      setGlobalState({ user: null, isLoading: false, error: null });
+    }
 
-    checkAuth();
-
-    const { data: authListener } = supabase.auth.onAuthStateChange((_event, session) => {
+    // 2. 监听认证状态变化（全局只订阅一次）
+    supabase.auth.onAuthStateChange((_event, session) => {
       if (session) {
-        supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', session.user.id)
-          .maybeSingle()
-          .then(async ({ data: profile }) => {
-            let userData;
-            if (profile) {
-              userData = {
-                id: profile.id,
-                email: session.user.email || '',
-                username: profile.username,
-                avatar_url: profile.avatar_url,
-                bio: profile.bio,
-              };
-            } else {
-              const username = session.user.email?.split('@')[0] || 'user';
-              await supabase.from('profiles').insert({
-                id: session.user.id,
-                username: username,
-              });
-              userData = {
-                id: session.user.id,
-                email: session.user.email || '',
-                username: username,
-              };
-            }
-            setAuthState({ user: userData, isLoading: false, error: null });
+        fetchProfile(session.user.id, session.user.email || '')
+          .then((user) => setGlobalState({ user, isLoading: false, error: null }))
+          .catch((err) => {
+            console.error('认证状态变化处理失败:', err);
+            setGlobalState({ user: null, isLoading: false, error: null });
           });
       } else {
-        setAuthState({ user: null, isLoading: false, error: null });
+        setGlobalState({ user: null, isLoading: false, error: null });
       }
     });
 
-    return () => {
-      authListener?.subscription.unsubscribe();
-    };
+    store.initialized = true;
+  })();
+
+  return store.initPromise;
+}
+
+export function AuthProvider({ children }: { children: ReactNode }) {
+  const store = getStore();
+  const [authState, setLocalState] = useState<AuthState>(store.state);
+  const mountedRef = useRef(false);
+
+  // 只在第一个 Provider 中执行初始化
+  useEffect(() => {
+    if (mountedRef.current) return;
+    mountedRef.current = true;
+    initAuth();
   }, []);
+
+  // 订阅全局状态变化
+  useEffect(() => {
+    const listener: Listener = (state) => setLocalState(state);
+    store.listeners.add(listener);
+    // 立即同步一次
+    setLocalState(store.state);
+    return () => {
+      store.listeners.delete(listener);
+    };
+  }, [store]);
+
+  const isEnabled = supabase !== null;
 
   const login = async (data: LoginFormData) => {
     if (!supabase) return;
-    setAuthState((prev) => ({ ...prev, isLoading: true, error: null }));
+    setGlobalState({ ...store.state, isLoading: true, error: null });
     const { error } = await supabase.auth.signInWithPassword({
       email: data.email,
       password: data.password,
     });
     if (error) {
-      setAuthState((prev) => ({ ...prev, isLoading: false, error: error.message }));
+      setGlobalState({ ...store.state, isLoading: false, error: error.message });
     }
   };
 
   const register = async (data: RegisterFormData) => {
     if (!supabase) return;
-    setAuthState((prev) => ({ ...prev, isLoading: true, error: null }));
-    const { user, session, error: authError } = await supabase.auth.signUp({
+    setGlobalState({ ...store.state, isLoading: true, error: null });
+    const { user, error: authError } = await supabase.auth.signUp({
       email: data.email,
       password: data.password,
     });
     if (authError) {
-      setAuthState((prev) => ({ ...prev, isLoading: false, error: authError.message }));
+      setGlobalState({ ...store.state, isLoading: false, error: authError.message });
       return;
     }
-
     if (user) {
       const { error: profileError } = await supabase.from('profiles').insert({
         id: user.id,
         username: data.username,
       });
       if (profileError) {
-        setAuthState((prev) => ({ ...prev, isLoading: false, error: profileError.message }));
+        setGlobalState({ ...store.state, isLoading: false, error: profileError.message });
         return;
       }
-      setAuthState((prev) => ({ ...prev, isLoading: false }));
+      setGlobalState({ ...store.state, isLoading: false, error: null });
     } else {
-      setAuthState((prev) => ({ ...prev, isLoading: false, error: '注册失败，请重试' }));
+      setGlobalState({ ...store.state, isLoading: false, error: '注册失败，请重试' });
     }
   };
 
   const logout = async () => {
     if (!supabase) return;
     await supabase.auth.signOut();
-    setAuthState({ user: null, isLoading: false, error: null });
+    setGlobalState({ user: null, isLoading: false, error: null });
   };
 
   return (

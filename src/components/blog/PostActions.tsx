@@ -18,6 +18,7 @@ function PostActionsInner({ postId, postTitle }: PostActionsProps) {
   const [loading, setLoading] = useState(true);
 
   const currentUser = authState.user;
+  const currentUserId = currentUser?.id;
 
   // 加载点赞数和当前用户点赞状态
   useEffect(() => {
@@ -25,6 +26,8 @@ function PostActionsInner({ postId, postTitle }: PostActionsProps) {
       setLoading(false);
       return;
     }
+
+    let cancelled = false;
 
     const fetchLikes = async () => {
       try {
@@ -34,31 +37,39 @@ function PostActionsInner({ postId, postTitle }: PostActionsProps) {
           .select('*', { count: 'exact', head: true })
           .eq('post_id', postId);
 
-        if (!countError && count !== null) {
+        if (!cancelled && !countError && count !== null) {
           setLikes(count);
         }
 
         // 检查当前用户是否已点赞
-        if (currentUser) {
+        if (!cancelled && currentUserId) {
           const { data, error: userLikeError } = await supabase
             .from('post_likes')
             .select('id')
             .eq('post_id', postId)
-            .eq('user_id', currentUser.id)
+            .eq('user_id', currentUserId)
             .maybeSingle();
 
-          if (!userLikeError) {
+          if (!cancelled && !userLikeError) {
             setIsLiked(!!data);
           }
+        } else if (!cancelled) {
+          setIsLiked(false);
         }
       } catch (err) {
         console.error('加载点赞数据失败:', err);
       }
-      setLoading(false);
+      if (!cancelled) {
+        setLoading(false);
+      }
     };
 
     fetchLikes();
-  }, [postId, currentUser]);
+
+    return () => {
+      cancelled = true;
+    };
+  }, [postId, currentUserId]);
 
   const handleLike = async () => {
     if (!supabase) return;
