@@ -36,6 +36,11 @@ jobs:
       - name: Build
         run: npm run build
 
+      - name: Clean prerender cache
+        # Astro 5+ 会输出 .prerender 内部缓存目录，必须排除
+        # 否则 GitHub Pages syncing_files 阶段会因文件过多失败
+        run: rm -rf dist/.prerender
+
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
