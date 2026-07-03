@@ -15,74 +15,10 @@ function CommentSectionInner({ postId }: CommentSectionProps) {
   const [replyingTo, setReplyingTo] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [authModalDefaultTab, setAuthModalDefaultTab] = useState<'login' | 'register'>('login');
 
-  useEffect(() => {
-    if (!supabase) {
-      setIsLoading(false);
-      return;
-    }
-
-    const checkAuth = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session) {
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', session.user.id)
-          .single();
-
-        setCurrentUser(profile
-          ? {
-              id: profile.id,
-              email: session.user.email || '',
-              username: profile.username,
-              avatar_url: profile.avatar_url,
-              bio: profile.bio,
-            }
-          : {
-              id: session.user.id,
-              email: session.user.email || '',
-              username: session.user.email?.split('@')[0] || '',
-            });
-      }
-    };
-
-    checkAuth();
-
-    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (session) {
-        supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', session.user.id)
-          .single()
-          .then(({ data: profile }) => {
-            setCurrentUser(profile
-              ? {
-                  id: profile.id,
-                  email: session.user.email || '',
-                  username: profile.username,
-                  avatar_url: profile.avatar_url,
-                  bio: profile.bio,
-                }
-              : {
-                  id: session.user.id,
-                  email: session.user.email || '',
-                  username: session.user.email?.split('@')[0] || '',
-                });
-          });
-      } else {
-        setCurrentUser(null);
-      }
-    });
-
-    return () => {
-      listener?.subscription.unsubscribe();
-    };
-  }, []);
+  const currentUser = authState.user;
 
   const fetchComments = async () => {
     if (!supabase) {
