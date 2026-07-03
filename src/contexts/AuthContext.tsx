@@ -34,22 +34,33 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           .from('profiles')
           .select('*')
           .eq('id', session.user.id)
-          .single();
+          .maybeSingle();
+
+        let userData;
+        if (profile) {
+          userData = {
+            id: profile.id,
+            email: session.user.email || '',
+            username: profile.username,
+            avatar_url: profile.avatar_url,
+            bio: profile.bio,
+          };
+        } else {
+          // Profile 不存在，自动创建
+          const username = session.user.email?.split('@')[0] || 'user';
+          await supabase.from('profiles').insert({
+            id: session.user.id,
+            username: username,
+          });
+          userData = {
+            id: session.user.id,
+            email: session.user.email || '',
+            username: username,
+          };
+        }
 
         setAuthState({
-          user: profile
-            ? {
-                id: profile.id,
-                email: session.user.email || '',
-                username: profile.username,
-                avatar_url: profile.avatar_url,
-                bio: profile.bio,
-              }
-            : {
-                id: session.user.id,
-                email: session.user.email || '',
-                username: session.user.email?.split('@')[0] || '',
-              },
+          user: userData,
           isLoading: false,
           error: null,
         });
@@ -66,25 +77,30 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           .from('profiles')
           .select('*')
           .eq('id', session.user.id)
-          .single()
-          .then(({ data: profile }) => {
-            setAuthState({
-              user: profile
-                ? {
-                    id: profile.id,
-                    email: session.user.email || '',
-                    username: profile.username,
-                    avatar_url: profile.avatar_url,
-                    bio: profile.bio,
-                  }
-                : {
-                    id: session.user.id,
-                    email: session.user.email || '',
-                    username: session.user.email?.split('@')[0] || '',
-                  },
-              isLoading: false,
-              error: null,
-            });
+          .maybeSingle()
+          .then(async ({ data: profile }) => {
+            let userData;
+            if (profile) {
+              userData = {
+                id: profile.id,
+                email: session.user.email || '',
+                username: profile.username,
+                avatar_url: profile.avatar_url,
+                bio: profile.bio,
+              };
+            } else {
+              const username = session.user.email?.split('@')[0] || 'user';
+              await supabase.from('profiles').insert({
+                id: session.user.id,
+                username: username,
+              });
+              userData = {
+                id: session.user.id,
+                email: session.user.email || '',
+                username: username,
+              };
+            }
+            setAuthState({ user: userData, isLoading: false, error: null });
           });
       } else {
         setAuthState({ user: null, isLoading: false, error: null });
