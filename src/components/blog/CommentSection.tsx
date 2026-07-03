@@ -29,14 +29,37 @@ function CommentSectionInner({ postId }: CommentSectionProps) {
     setIsLoading(true);
     const { data, error } = await supabase
       .from('comments')
-      .select('*, author:profiles(id, username, avatar_url)')
+      .select('*')
       .eq('post_id', postId)
       .eq('status', 'approved')
       .order('created_at', { ascending: false });
 
     if (!error && data) {
-      const rootComments = data.filter((c: Comment) => !c.parent_id);
-      const replies = data.filter((c: Comment) => c.parent_id);
+      // 单独查询 author 信息
+      const authorIds = [...new Set(data.map((c: Comment) => c.author_id).filter(Boolean))];
+      let authorsMap: Record<string, any> = {};
+
+      if (authorIds.length > 0) {
+        const { data: authors } = await supabase
+          .from('profiles')
+          .select('id, username, avatar_url')
+          .in('id', authorIds);
+
+        if (authors) {
+          authorsMap = authors.reduce((acc: any, author: any) => {
+            acc[author.id] = author;
+            return acc;
+          }, {});
+        }
+      }
+
+      const commentsWithAuthors = data.map((c: Comment) => ({
+        ...c,
+        author: authorsMap[c.author_id] || null,
+      }));
+
+      const rootComments = commentsWithAuthors.filter((c: Comment) => !c.parent_id);
+      const replies = commentsWithAuthors.filter((c: Comment) => c.parent_id);
 
       const commentsWithReplies = rootComments.map((comment: Comment) => ({
         ...comment,
