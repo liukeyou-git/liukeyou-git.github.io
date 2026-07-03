@@ -227,6 +227,42 @@ pre.astro-code {
   width: 100%;
 }
 
+/* ===== 点赞按钮动画 ===== */
+.like-animate {
+  animation: like-pulse 0.6s ease;
+}
+
+@keyframes like-pulse {
+  0% {
+    transform: scale(1);
+  }
+  30% {
+    transform: scale(1.2);
+  }
+  60% {
+    transform: scale(0.95);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+/* ===== 复制成功提示动画 ===== */
+@keyframes fade-in-up {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, 20px);
+  }
+  100% {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+}
+
+.animate-fade-in-up {
+  animation: fade-in-up 0.3s ease-out;
+}
+
 /* ===== Lenis 平滑滚动 ===== */
 html.lenis,
 html.lenis body {

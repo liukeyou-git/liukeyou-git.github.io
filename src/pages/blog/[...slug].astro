@@ -3,6 +3,7 @@ import { getCollection } from 'astro:content';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import TableOfContents from '../../components/blog/TableOfContents';
 import CommentSection from '../../components/blog/CommentSection';
+import PostActions from '../../components/blog/PostActions';
 
 export async function getStaticPaths() {
   const posts = await getCollection('blog');
@@ -28,7 +29,7 @@ const { Content, frontmatter } = postImport;
 
 <BaseLayout title={`${frontmatter.title} — liukeyou`} description={frontmatter.description}>
   <TableOfContents client:load />
-  
+
   <article class="mx-auto max-w-3xl px-6 pb-24">
     <header class="mb-12">
       <div class="flex flex-wrap items-center gap-2 mb-4">
@@ -41,15 +42,15 @@ const { Content, frontmatter } = postImport;
           </span>
         ))}
       </div>
-      
+
       <h1 class="text-4xl sm:text-5xl font-black text-text-primary mb-4 leading-tight">
         {frontmatter.title}
       </h1>
-      
+
       <p class="text-text-secondary text-lg mb-6">
         {frontmatter.description}
       </p>
-      
+
       <div class="flex items-center gap-4 text-sm text-text-secondary">
         <span>{formatDate(frontmatter.publishedAt)}</span>
         {frontmatter.updatedAt && (
@@ -65,30 +66,17 @@ const { Content, frontmatter } = postImport;
         )}
       </div>
     </header>
-    
+
     <div class="prose">
       <Content />
     </div>
-    
+
     <footer class="mt-16 pt-8 border-t border-white/10">
       <div class="flex items-center justify-between">
         <p class="text-sm text-text-secondary">
           作者：liukeyou
         </p>
-        <div class="flex items-center gap-4">
-          <button class="flex items-center gap-2 px-4 py-2 rounded-lg bg-bg-card text-text-secondary hover:text-text-primary transition-colors text-sm">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
-            </svg>
-            点赞
-          </button>
-          <button class="flex items-center gap-2 px-4 py-2 rounded-lg bg-bg-card text-text-secondary hover:text-text-primary transition-colors text-sm">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path>
-            </svg>
-            分享
-          </button>
-        </div>
+        <PostActions client:load postId={slug} postTitle={frontmatter.title} />
       </div>
     </footer>
 
