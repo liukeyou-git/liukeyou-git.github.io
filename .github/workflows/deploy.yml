@@ -53,6 +53,5 @@ jobs:
         uses: actions/deploy-pages@v4
         with:
           timeout: 600000
-          max_attempts: 3
-          retry_on: error
-          polling_interval: 10
+          error_count: 10
+          reporting_interval: 10
