@@ -88,7 +88,8 @@ export default function PostEditor({ initial, onSaved, onCancel }: PostEditorPro
       return;
     }
 
-    onSaved?.(result.data!.id);
+    setSavedInfo({ postId: result.data!.id, status });
+    onSaved?.(result.data!.id, status);
   };
 
   return (
