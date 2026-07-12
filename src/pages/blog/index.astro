@@ -2,6 +2,7 @@
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import ScrollReveal from '../../components/animations/ScrollReveal.astro';
 import FilterablePostList from '../../components/blog/FilterablePostList';
+import AuroraBackground from '../../components/background/AuroraBackground';
 import { getCollection } from 'astro:content';
 
 const mdxPosts = (await getCollection('blog'))
@@ -21,7 +22,9 @@ const initialPosts = mdxPosts.map((post) => ({
 ---
 
 <BaseLayout title="Blog — liukeyou" description="技术文章和思考">
-  <div class="mx-auto max-w-5xl px-6 pb-24">
+  <AuroraBackground client:load />
+
+  <div class="relative z-10 mx-auto max-w-5xl px-6 pb-24">
     <ScrollReveal>
       <h1 class="text-4xl sm:text-5xl font-black gradient-text mb-4">Blog</h1>
       <p class="text-text-secondary mb-10">
