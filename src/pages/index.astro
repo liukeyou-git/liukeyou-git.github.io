@@ -2,13 +2,18 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import ParticleField from '../components/animations/ParticleField';
 import ScrollReveal from '../components/animations/ScrollReveal.astro';
-import PostCard from '../components/blog/PostCard.astro';
+import RecentPosts from '../components/blog/RecentPosts';
 import { getCollection } from 'astro:content';
 
-const posts = (await getCollection('blog'))
+const staticPosts = (await getCollection('blog'))
   .filter((p) => !p.data.draft)
-  .sort((a, b) => b.data.publishedAt.getTime() - a.data.publishedAt.getTime())
-  .slice(0, 4);
+  .map((p) => ({
+    id: p.id,
+    title: p.data.title,
+    description: p.data.description ?? '',
+    publishedAt: p.data.publishedAt.toISOString(),
+    tags: p.data.tags,
+  }));
 ---
 
 <BaseLayout title="liukeyou — Developer & Creator" description="一个热爱技术、写作和创造的个人博客">
@@ -58,7 +63,7 @@ const posts = (await getCollection('blog'))
     </section>
 
     <!-- Recent posts -->
-    {posts.length > 0 && (
+    {staticPosts.length > 0 && (
       <section class="mx-auto max-w-5xl px-6 pb-24">
         <ScrollReveal>
           <div class="flex items-center justify-between mb-8">
@@ -74,13 +79,9 @@ const posts = (await getCollection('blog'))
           </div>
         </ScrollReveal>
 
-        <div class="grid gap-4 sm:grid-cols-2">
-          {posts.map((post, i) => (
-            <ScrollReveal delay={i * 0.1}>
-              <PostCard post={post} />
-            </ScrollReveal>
-          ))}
-        </div>
+        <ScrollReveal>
+          <RecentPosts client:load staticPosts={staticPosts} limit={4} />
+        </ScrollReveal>
       </section>
     )}
   </div>
