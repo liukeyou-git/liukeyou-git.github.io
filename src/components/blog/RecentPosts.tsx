@@ -53,7 +53,7 @@ export default function RecentPosts({ staticPosts, limit = 4 }: RecentPostsProps
       try {
         const { data, error } = await supabase
           .from('posts')
-          .select('id, title, description, tags, published_at, created_at')
+          .select('id, title, description, tags, published_at, updated_at')
           .eq('status', 'published')
           .order('published_at', { ascending: false })
           .limit(20);
@@ -68,7 +68,7 @@ export default function RecentPosts({ staticPosts, limit = 4 }: RecentPostsProps
           id: p.id,
           title: p.title,
           description: p.description ?? '',
-          publishedAt: p.published_at ?? p.created_at,
+          publishedAt: p.published_at ?? p.updated_at,
           tags: p.tags ?? [],
           source: 'dynamic' as const,
         }));

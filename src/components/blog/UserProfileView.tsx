@@ -137,7 +137,7 @@ export default function UserProfileView({ username }: UserProfileViewProps) {
                 <p className="text-sm text-text-secondary line-clamp-1">{post.description}</p>
               )}
               <p className="text-xs text-text-secondary/60 mt-2">
-                {formatDate(post.published_at || post.created_at)}
+                {formatDate(post.published_at || post.updated_at)}
               </p>
             </a>
           ))}

@@ -63,7 +63,7 @@ export default function MixedPostList({ initialPosts }: MixedPostListProps) {
         title: p.title,
         description: p.description,
         tags: p.tags || [],
-        date: p.published_at || p.created_at || '',
+        date: p.published_at || p.updated_at || '',
         href: `/blog/p/${p.id}`,
         cover: p.cover_url,
         author: authorsMap[p.author_id]?.username,

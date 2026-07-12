@@ -184,7 +184,7 @@ function DynamicPostViewInner({ postId }: DynamicPostViewProps) {
             </a>
           )}
           <span>·</span>
-          <span>{formatDate(post.published_at || post.created_at)}</span>
+          <span>{formatDate(post.published_at || post.updated_at)}</span>
         </div>
       </header>
 
