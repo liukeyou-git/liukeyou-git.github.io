@@ -127,7 +127,7 @@ export default function GridDotsBackground() {
   return (
     <div
       aria-hidden="true"
-      className="absolute inset-0 overflow-hidden pointer-events-none"
+      className="fixed inset-0 overflow-hidden pointer-events-none z-0"
       style={{ contain: 'strict' }}
     >
       {/* 顶部紫色光晕 */}

@@ -1,6 +1,7 @@
 ---
 import BaseLayout from '../../../layouts/BaseLayout.astro';
 import DynamicPostView from '../../../components/blog/DynamicPostView';
+import AuroraBackground from '../../../components/background/AuroraBackground';
 
 // 构建时拉取所有已发布文章的 ID，生成静态路径
 // 新发布的文章需要重新部署才能访问
@@ -36,5 +37,6 @@ export async function getStaticPaths() {
 ---
 
 <BaseLayout title="文章 — liukeyou" description="用户发布的文章">
+  <AuroraBackground client:load />
   <DynamicPostView client:only="react" postId={Astro.params.id} />
 </BaseLayout>

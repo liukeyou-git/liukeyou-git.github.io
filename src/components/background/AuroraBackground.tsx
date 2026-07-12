@@ -47,7 +47,7 @@ export default function AuroraBackground() {
     <div
       ref={ref}
       aria-hidden="true"
-      className="absolute inset-0 overflow-hidden pointer-events-none"
+      className="fixed inset-0 overflow-hidden pointer-events-none z-0"
       style={{
         contain: 'strict',
         willChange: 'transform',
