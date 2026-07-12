@@ -3,9 +3,9 @@ import { useAuth } from '../../contexts/AuthContext';
 import AuthModal from '../auth/AuthModal';
 
 const navItems = [
-  { href: '/', label: 'Home' },
-  { href: '/blog', label: 'Blog' },
-  { href: '/about', label: 'About' },
+  { href: '/', label: '主页' },
+  { href: '/blog', label: '文章' },
+  { href: '/about', label: '关于此网站' },
 ];
 
 export default function Header() {
