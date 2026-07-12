@@ -1,10 +1,13 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 import ScrollReveal from '../components/animations/ScrollReveal.astro';
+import GridDotsBackground from '../components/background/GridDotsBackground';
 ---
 
 <BaseLayout title="About — liukeyou" description="关于我">
-  <div class="mx-auto max-w-3xl px-6 pb-24">
+  <GridDotsBackground client:load />
+
+  <div class="relative z-10 mx-auto max-w-3xl px-6 pb-24">
     <ScrollReveal>
       <h1 class="text-4xl sm:text-5xl font-black gradient-text mb-8">About</h1>
     </ScrollReveal>
