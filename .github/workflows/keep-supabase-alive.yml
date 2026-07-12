@@ -1,43 +1,18 @@
 name: Keep Supabase alive
 
 # 防止 Supabase 免费层项目 7 天不活跃被自动暂停
-# 每 5 天调用一次 Supabase REST API 让项目保持活跃
+# 每天调用一次 Supabase REST API（1 次/天，免费额度内）
 
 on:
   schedule:
-    # 每天尝试一次，但每个执行时检查距离上次 ping 是否已超过 5 天
-    - cron: '0 0 * * *'
+    - cron: '0 0 * * *'  # 每天 UTC 0 点
   workflow_dispatch: # 支持手动触发
 
 jobs:
   ping:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0  # 完整历史，用于读取 .last-ping 文件的提交时间
-
-      - name: 检查是否需要 ping
-        id: check
-        run: |
-          # 上次 ping 时间记录在仓库的 .github/.last-ping 文件中（git 提交记录）
-          LAST_PING=$(git log -1 --format=%ct -- .github/.last-ping 2>/dev/null || echo 0)
-          NOW=$(date +%s)
-          DIFF_DAYS=$(( (NOW - LAST_PING) / 86400 ))
-
-          echo "距离上次 ping: ${DIFF_DAYS} 天"
-
-          if [ "$DIFF_DAYS" -ge 5 ] || [ "$LAST_PING" -eq 0 ]; then
-            echo "需要 ping Supabase"
-            echo "should_ping=true" >> $GITHUB_OUTPUT
-          else
-            echo "未到 5 天，跳过 ping"
-            echo "should_ping=false" >> $GITHUB_OUTPUT
-          fi
-
       - name: Ping Supabase REST API
-        if: steps.check.outputs.should_ping == 'true'
         env:
           SUPABASE_URL: ${{ secrets.PUBLIC_SUPABASE_URL }}
           SUPABASE_KEY: ${{ secrets.PUBLIC_SUPABASE_ANON_KEY }}
@@ -60,15 +35,4 @@ jobs:
             exit 1
           fi
 
-          echo "Supabase ping 成功"
-
-      - name: 记录 ping 时间
-        if: steps.check.outputs.should_ping == 'true'
-        run: |
-          mkdir -p .github
-          date -u +"%Y-%m-%dT%H:%M:%SZ" > .github/.last-ping
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add .github/.last-ping
-          git diff --cached --quiet || git commit -m "chore: 记录 Supabase keep-alive ping 时间"
-          git push
+          echo "Supabase ping 成功，项目保持活跃"
