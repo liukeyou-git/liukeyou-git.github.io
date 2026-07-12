@@ -8,7 +8,7 @@ import type { PostDraft } from '../../types';
 
 interface PostEditorProps {
   initial?: Partial<PostDraft> & { id?: string };
-  onSaved?: (postId: string) => void;
+  onSaved?: (postId: string, status: 'draft' | 'published') => void;
   onCancel?: () => void;
 }
 
@@ -22,6 +22,7 @@ export default function PostEditor({ initial, onSaved, onCancel }: PostEditorPro
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showPreview, setShowPreview] = useState(false);
+  const [savedInfo, setSavedInfo] = useState<{ postId: string; status: 'draft' | 'published' } | null>(null);
 
   const postId = initial?.id;
   const isEdit = !!postId;
@@ -229,6 +230,60 @@ export default function PostEditor({ initial, onSaved, onCancel }: PostEditorPro
         )}
         <span className="ml-auto text-xs text-text-secondary/60">{content.length} 字</span>
       </div>
+
+      {savedInfo && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+          <div className="bg-bg-card border border-white/10 rounded-2xl p-6 max-w-md w-full shadow-2xl">
+            <div className="flex items-center justify-center w-12 h-12 mx-auto mb-4 rounded-full bg-green-500/20">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-green-400">
+                <polyline points="20 6 9 17 4 12"></polyline>
+              </svg>
+            </div>
+            <h3 className="text-xl font-bold text-center mb-2">
+              {savedInfo.status === 'published' ? '发布成功！' : '草稿已保存'}
+            </h3>
+            <p className="text-text-secondary text-sm text-center mb-6">
+              {savedInfo.status === 'published' ? (
+                <>
+                  由于 GitHub Pages 是静态托管，新文章需要等待 GitHub Actions
+                  重新部署（约 30-60 秒）后才能访问详情页链接。
+                  <br />
+                  <br />
+                  列表页和评论/点赞功能会立即生效。
+                </>
+              ) : (
+                '草稿已保存到个人中心，可随时继续编辑。'
+              )}
+            </p>
+            <div className="flex flex-col gap-2">
+              {savedInfo.status === 'published' && (
+                <a
+                  href={`/blog/p/${savedInfo.postId}`}
+                  className="w-full px-4 py-2.5 text-center bg-accent text-white font-medium rounded-lg hover:bg-accent-hover transition-colors"
+                >
+                  尝试打开文章（部署完成后可访问）
+                </a>
+              )}
+              <a
+                href="/profile"
+                className={`w-full px-4 py-2.5 text-center rounded-lg border transition-colors ${
+                  savedInfo.status === 'published'
+                    ? 'bg-bg-primary border-white/10 text-text-secondary hover:text-text-primary'
+                    : 'bg-accent text-white border-accent hover:bg-accent-hover'
+                }`}
+              >
+                去个人中心
+              </a>
+              <button
+                onClick={() => setSavedInfo(null)}
+                className="w-full px-4 py-2 text-text-secondary hover:text-text-primary transition-colors"
+              >
+                继续编辑
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

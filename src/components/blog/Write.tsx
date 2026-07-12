@@ -62,8 +62,8 @@ function WriteInner() {
   return (
     <PostEditor
       initial={initial || undefined}
-      onSaved={(postId) => {
-        window.location.href = `/blog/p/${postId}`;
+      onSaved={() => {
+        // PostEditor 内部已显示发布成功/草稿对话框，不在这里跳转
       }}
       onCancel={() => {
         window.location.href = '/profile';
