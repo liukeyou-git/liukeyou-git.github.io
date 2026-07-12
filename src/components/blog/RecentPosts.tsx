@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../../lib/supabase';
+import Card3D from './Card3D';
 
 interface PostItem {
   id: string;
@@ -93,11 +94,12 @@ export default function RecentPosts({ staticPosts, limit = 4 }: RecentPostsProps
   }
 
   return (
-    <div className="grid gap-4 sm:grid-cols-2">
+    <div className="grid gap-6 sm:grid-cols-2">
       {posts.map((post) => (
-        <article
+        <Card3D
           key={`${post.source}-${post.id}`}
-          className="group glass rounded-xl p-6 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-accent/10 hover:border-accent/20 relative overflow-hidden card-glow"
+          href={getHref(post)}
+          className="glass group p-6 hover:border-accent/30"
         >
           {post.tags.length > 0 && (
             <div className="flex items-center gap-2 mb-3">
@@ -113,7 +115,7 @@ export default function RecentPosts({ staticPosts, limit = 4 }: RecentPostsProps
           )}
 
           <h3 className="text-lg font-semibold text-text-primary mb-2 group-hover:gradient-text transition-all">
-            <a href={getHref(post)}>{post.title}</a>
+            {post.title}
           </h3>
 
           {post.description && (
@@ -122,7 +124,7 @@ export default function RecentPosts({ staticPosts, limit = 4 }: RecentPostsProps
 
           <div className="flex items-center justify-between text-xs text-text-secondary">
             <span>{formatDate(post.publishedAt)}</span>
-            <span className="flex items-center gap-1">
+            <span className="flex items-center gap-1 group-hover:text-accent transition-colors">
               阅读更多
               <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <line x1="5" y1="12" x2="19" y2="12"></line>
@@ -130,7 +132,7 @@ export default function RecentPosts({ staticPosts, limit = 4 }: RecentPostsProps
               </svg>
             </span>
           </div>
-        </article>
+        </Card3D>
       ))}
     </div>
   );
