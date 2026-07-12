@@ -233,7 +233,17 @@ export default function PostEditor({ initial, onSaved, onCancel }: PostEditorPro
 
       {savedInfo && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-          <div className="bg-bg-card border border-white/10 rounded-2xl p-6 max-w-md w-full shadow-2xl">
+          <div className="relative bg-bg-card border border-white/10 rounded-2xl p-6 max-w-md w-full shadow-2xl">
+            <button
+              onClick={() => setSavedInfo(null)}
+              className="absolute top-3 right-3 w-8 h-8 flex items-center justify-center rounded-lg text-text-secondary hover:text-text-primary hover:bg-white/5 transition-colors"
+              aria-label="关闭"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+              </svg>
+            </button>
             <div className="flex items-center justify-center w-12 h-12 mx-auto mb-4 rounded-full bg-green-500/20">
               <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-green-400">
                 <polyline points="20 6 9 17 4 12"></polyline>
@@ -256,29 +266,27 @@ export default function PostEditor({ initial, onSaved, onCancel }: PostEditorPro
               )}
             </p>
             <div className="flex flex-col gap-2">
-              {savedInfo.status === 'published' && (
-                <a
-                  href={`/blog/p/${savedInfo.postId}`}
-                  className="w-full px-4 py-2.5 text-center bg-accent text-white font-medium rounded-lg hover:bg-accent-hover transition-colors"
-                >
-                  尝试打开文章（部署完成后可访问）
-                </a>
-              )}
               <a
-                href="/profile"
-                className={`w-full px-4 py-2.5 text-center rounded-lg border transition-colors ${
-                  savedInfo.status === 'published'
-                    ? 'bg-bg-primary border-white/10 text-text-secondary hover:text-text-primary'
-                    : 'bg-accent text-white border-accent hover:bg-accent-hover'
-                }`}
+                href="/blog"
+                className="w-full px-4 py-2.5 text-center bg-accent text-white font-medium rounded-lg hover:bg-accent-hover transition-colors"
               >
-                去个人中心
+                确认（查看博客）
               </a>
               <button
-                onClick={() => setSavedInfo(null)}
-                className="w-full px-4 py-2 text-text-secondary hover:text-text-primary transition-colors"
+                onClick={() => {
+                  // 清空表单，继续发布
+                  setTitle('');
+                  setDescription('');
+                  setContent('');
+                  setTagsInput('');
+                  setCoverUrl('');
+                  setSavedInfo(null);
+                  setError(null);
+                  window.scrollTo({ top: 0, behavior: 'smooth' });
+                }}
+                className="w-full px-4 py-2.5 text-center rounded-lg border border-white/10 bg-bg-primary text-text-secondary hover:text-text-primary hover:border-white/20 transition-colors"
               >
-                继续编辑
+                继续发布
               </button>
             </div>
           </div>
