@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import PostEditor from './PostEditor';
 import { supabase } from '../../lib/supabase';
-import { useAuth } from '../../contexts/AuthContext';
+import { useAuth, AuthProvider } from '../../contexts/AuthContext';
 import AuthGate from '../auth/AuthGate';
 import type { PostDraft } from '../../types';
 
