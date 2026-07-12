@@ -1,27 +1,14 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import ScrollReveal from '../../components/animations/ScrollReveal.astro';
-import MixedPostList from '../../components/blog/MixedPostList';
+import FilterablePostList from '../../components/blog/FilterablePostList';
 import { getCollection } from 'astro:content';
 
 const mdxPosts = (await getCollection('blog'))
   .filter((p) => !p.data.draft)
   .sort((a, b) => b.data.publishedAt.getTime() - a.data.publishedAt.getTime());
 
-const tagCounts: Record<string, number> = {};
-for (const post of mdxPosts) {
-  for (const tag of post.data.tags) {
-    tagCounts[tag] = (tagCounts[tag] || 0) + 1;
-  }
-}
-const allTags = Object.entries(tagCounts).sort(([, a], [, b]) => b - a);
-
-const selectedTag = Astro.url.searchParams.get('tag') || '';
-const filteredMdxPosts = selectedTag
-  ? mdxPosts.filter((p) => p.data.tags.includes(selectedTag))
-  : mdxPosts;
-
-const initialPosts = filteredMdxPosts.map((post) => ({
+const initialPosts = mdxPosts.map((post) => ({
   id: post.id,
   type: 'mdx' as const,
   title: post.data.title,
@@ -42,39 +29,6 @@ const initialPosts = filteredMdxPosts.map((post) => ({
       </p>
     </ScrollReveal>
 
-    {allTags.length > 0 && (
-      <ScrollReveal delay={0.1}>
-        <div class="flex flex-wrap gap-2 mb-10">
-          <a
-            href="/blog"
-            class={`px-3 py-1 text-xs rounded-full transition-all ${
-              !selectedTag
-                ? 'bg-accent text-white'
-                : 'bg-bg-card text-text-secondary hover:text-text-primary border border-white/5'
-            }`}
-          >
-            全部
-          </a>
-          {allTags.map(([tag, count]) => (
-            <a
-              href={`/blog?tag=${tag}`}
-              class={`px-3 py-1 text-xs rounded-full transition-all ${
-                selectedTag === tag
-                  ? 'bg-accent text-white'
-                  : 'bg-bg-card text-text-secondary hover:text-text-primary border border-white/5'
-              }`}
-            >
-              {tag} ({count})
-            </a>
-          ))}
-        </div>
-      </ScrollReveal>
-    )}
-
-    {filteredMdxPosts.length === 0 ? (
-      <p class="text-text-secondary text-center py-20">暂无文章。</p>
-    ) : (
-      <MixedPostList client:load initialPosts={initialPosts} />
-    )}
+    <FilterablePostList client:load initialPosts={initialPosts} />
   </div>
 </BaseLayout>
