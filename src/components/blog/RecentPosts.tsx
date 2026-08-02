@@ -7,6 +7,7 @@ interface PostItem {
   title: string;
   description: string;
   publishedAt: string;
+  updatedAt?: string;
   tags: string[];
   source: 'static' | 'dynamic';
 }
@@ -17,6 +18,7 @@ interface RecentPostsProps {
     title: string;
     description: string;
     publishedAt: string;
+    updatedAt?: string;
     tags: string[];
   }>;
   limit?: number;
@@ -65,14 +67,21 @@ export default function RecentPosts({ staticPosts, limit = 4 }: RecentPostsProps
           return;
         }
 
-        const dynamicPosts: PostItem[] = (data ?? []).map((p) => ({
-          id: p.id,
-          title: p.title,
-          description: p.description ?? '',
-          publishedAt: p.published_at ?? p.updated_at,
-          tags: p.tags ?? [],
-          source: 'dynamic' as const,
-        }));
+        const dynamicPosts: PostItem[] = (data ?? []).map((p) => {
+          const hasUpdate =
+            !!p.updated_at &&
+            !!p.published_at &&
+            new Date(p.updated_at).getTime() - new Date(p.published_at).getTime() > 60 * 1000;
+          return {
+            id: p.id,
+            title: p.title,
+            description: p.description ?? '',
+            publishedAt: p.published_at ?? p.updated_at,
+            updatedAt: hasUpdate ? p.updated_at! : undefined,
+            tags: p.tags ?? [],
+            source: 'dynamic' as const,
+          };
+        });
 
         // 合并：静态 + 动态，按时间降序，取前 limit
         const merged = [...staticPosts.map((p) => ({ ...p, source: 'static' as const })), ...dynamicPosts]
@@ -123,7 +132,19 @@ export default function RecentPosts({ staticPosts, limit = 4 }: RecentPostsProps
           )}
 
           <div className="flex items-center justify-between text-xs text-text-secondary">
-            <span>{formatDate(post.publishedAt)}</span>
+            {post.updatedAt ? (
+              <span className="flex items-center gap-1">
+                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path>
+                  <path d="M3 3v5h5"></path>
+                  <path d="M16 5l4 4"></path>
+                  <path d="M20 16v5h-5"></path>
+                </svg>
+                更新于 {formatDate(post.updatedAt)}
+              </span>
+            ) : (
+              <span>{formatDate(post.publishedAt)}</span>
+            )}
             <span className="flex items-center gap-1 group-hover:text-accent transition-colors">
               阅读更多
               <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">

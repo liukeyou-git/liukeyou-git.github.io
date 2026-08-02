@@ -16,6 +16,7 @@ const initialPosts = mdxPosts.map((post) => ({
   description: post.data.description,
   tags: post.data.tags,
   date: post.data.publishedAt.toISOString(),
+  updatedAt: post.data.updatedAt?.toISOString(),
   href: `/blog/${post.id}`,
   cover: post.data.cover,
 }));

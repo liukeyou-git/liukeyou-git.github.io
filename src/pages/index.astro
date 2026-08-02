@@ -13,6 +13,7 @@ const staticPosts = (await getCollection('blog'))
     title: p.data.title,
     description: p.data.description ?? '',
     publishedAt: p.data.publishedAt.toISOString(),
+    updatedAt: p.data.updatedAt?.toISOString(),
     tags: p.data.tags,
   }));
 ---
