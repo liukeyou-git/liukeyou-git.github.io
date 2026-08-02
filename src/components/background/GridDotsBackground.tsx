@@ -80,7 +80,7 @@ export default function GridDotsBackground() {
         ctx.beginPath();
         ctx.arc(p.x, p.y, baseRadius, 0, Math.PI * 2);
         ctx.fillStyle = p.pulse > 0
-          ? `rgba(168, 85, 247, ${baseAlpha})` // 激活：紫色
+          ? `rgba(56, 189, 248, ${baseAlpha})` // 激活：天蓝
           : `rgba(148, 163, 184, ${baseAlpha})`; // 默认：灰
         ctx.fill();
       }
@@ -100,7 +100,7 @@ export default function GridDotsBackground() {
             ctx.beginPath();
             ctx.moveTo(a.x, a.y);
             ctx.lineTo(b.x, b.y);
-            ctx.strokeStyle = `rgba(99, 102, 241, ${alpha})`;
+            ctx.strokeStyle = `rgba(96, 165, 250, ${alpha})`;
             ctx.lineWidth = 0.5;
             ctx.stroke();
           }
@@ -130,12 +130,12 @@ export default function GridDotsBackground() {
       className="fixed inset-0 overflow-hidden pointer-events-none z-0"
       style={{ contain: 'strict' }}
     >
-      {/* 顶部紫色光晕 */}
+      {/* 顶部天蓝光晕 */}
       <div
         className="absolute -top-40 left-1/2 -translate-x-1/2 w-[60rem] h-[40rem] rounded-full opacity-30"
         style={{
           background:
-            'radial-gradient(ellipse, rgba(139, 92, 246, 0.4), transparent 60%)',
+            'radial-gradient(ellipse, rgba(56, 189, 248, 0.4), transparent 60%)',
           filter: 'blur(80px)',
         }}
       />

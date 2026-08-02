@@ -54,12 +54,12 @@ export default function BackgroundBeams() {
 
   // 6 条光束：奇偶交错、不同延迟、不同位置
   const beams = [
-    { left: "10%", delay: 0, dur: 7, color: "from-violet-500/40 via-purple-500/30 to-transparent" },
+    { left: "10%", delay: 0, dur: 7, color: "from-sky-500/40 via-sky-400/30 to-transparent" },
     { left: "30%", delay: 1.5, dur: 9, color: "from-blue-500/35 via-cyan-500/25 to-transparent" },
-    { left: "50%", delay: 0.8, dur: 8, color: "from-fuchsia-500/40 via-pink-500/25 to-transparent" },
-    { left: "70%", delay: 2.2, dur: 10, color: "from-indigo-500/40 via-violet-500/25 to-transparent" },
-    { left: "85%", delay: 0.4, dur: 7.5, color: "from-purple-500/35 via-fuchsia-500/20 to-transparent" },
-    { left: "20%", delay: 3, dur: 11, color: "from-cyan-500/30 via-blue-500/20 to-transparent" },
+    { left: "50%", delay: 0.8, dur: 8, color: "from-cyan-400/40 via-sky-400/25 to-transparent" },
+    { left: "70%", delay: 2.2, dur: 10, color: "from-sky-400/40 via-blue-400/25 to-transparent" },
+    { left: "85%", delay: 0.4, dur: 7.5, color: "from-blue-400/35 via-cyan-400/20 to-transparent" },
+    { left: "20%", delay: 3, dur: 11, color: "from-cyan-500/30 via-sky-500/20 to-transparent" },
   ];
 
   return (
@@ -92,7 +92,7 @@ export default function BackgroundBeams() {
       />
 
       {/* 底部柔和光晕 */}
-      <div className="absolute bottom-0 left-0 right-0 h-96 bg-gradient-to-t from-violet-500/5 via-purple-500/3 to-transparent" />
+      <div className="absolute bottom-0 left-0 right-0 h-96 bg-gradient-to-t from-sky-500/5 via-cyan-500/3 to-transparent" />
     </div>
   );
 }
@@ -126,7 +126,7 @@ function Beam({
         className="absolute inset-0 w-px"
         style={{
           background:
-            "linear-gradient(to bottom, rgba(255,255,255,0.5), rgba(168,85,247,0.3), transparent)",
+            "linear-gradient(to bottom, rgba(255,255,255,0.5), rgba(56,189,248,0.3), transparent)",
           animation: `beamFlow ${dur}s ease-in-out infinite`,
           animationDelay: `${delay}s`,
         }}

@@ -50,7 +50,7 @@ export default function ParticleField() {
       for (const p of particles) {
         ctx!.beginPath();
         ctx!.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-        ctx!.fillStyle = `rgba(139, 92, 246, ${p.alpha})`;
+        ctx!.fillStyle = `rgba(56, 189, 248, ${p.alpha})`;
         ctx!.fill();
 
         // Move
@@ -74,7 +74,7 @@ export default function ParticleField() {
             ctx!.beginPath();
             ctx!.moveTo(particles[i].x, particles[i].y);
             ctx!.lineTo(particles[j].x, particles[j].y);
-            ctx!.strokeStyle = `rgba(139, 92, 246, ${0.06 * (1 - dist / 120)})`;
+            ctx!.strokeStyle = `rgba(56, 189, 248, ${0.06 * (1 - dist / 120)})`;
             ctx!.lineWidth = 0.5;
             ctx!.stroke();
           }

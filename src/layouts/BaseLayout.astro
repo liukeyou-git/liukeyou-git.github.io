@@ -1,6 +1,7 @@
 ---
 import Footer from '../components/layout/Footer.astro';
 import PageTransition from '../components/animations/PageTransition';
+import ParticleField from '../components/animations/ParticleField';
 import AppRoot from '../components/AppRoot';
 import '../styles/global.css';
 
@@ -25,13 +26,31 @@ const { title, description = "liukeyou's personal blog" } = Astro.props;
     <title>{title}</title>
   </head>
   <body class="min-h-screen bg-bg-primary text-text-primary antialiased">
+    <ParticleField client:load />
     <AppRoot client:load>
-      <main class="pt-20">
+      <main class="relative z-10 pt-20">
         <PageTransition client:load>
           <slot />
         </PageTransition>
       </main>
       <Footer />
     </AppRoot>
+
+    <script>
+      // 按钮涟漪：点击 .ripple-btn 时注入扩散圆
+      document.addEventListener('click', (e) => {
+        const btn = (e.target as HTMLElement).closest('.ripple-btn');
+        if (!btn) return;
+        const rect = btn.getBoundingClientRect();
+        const circle = document.createElement('span');
+        circle.className = 'ripple-circle';
+        const size = Math.max(rect.width, rect.height);
+        circle.style.width = circle.style.height = `${size}px`;
+        circle.style.left = `${e.clientX - rect.left - size / 2}px`;
+        circle.style.top = `${e.clientY - rect.top - size / 2}px`;
+        btn.appendChild(circle);
+        setTimeout(() => circle.remove(), 600);
+      });
+    </script>
   </body>
 </html>

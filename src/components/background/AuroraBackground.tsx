@@ -54,42 +54,42 @@ export default function AuroraBackground() {
         transform: 'translate3d(var(--ax, 0), var(--ay, 0), 0)',
       }}
     >
-      {/* 顶部光晕（紫） */}
+      {/* 顶部光晕（天蓝） */}
       <div
         className="absolute -top-40 -left-40 w-[60rem] h-[60rem] rounded-full opacity-40"
         style={{
           background:
-            'radial-gradient(circle, rgba(139, 92, 246, 0.5), rgba(139, 92, 246, 0.15) 40%, transparent 70%)',
+            'radial-gradient(circle, rgba(56, 189, 248, 0.5), rgba(56, 189, 248, 0.15) 40%, transparent 70%)',
           filter: 'blur(80px)',
           animation: 'aurora1 18s ease-in-out infinite',
         }}
       />
-      {/* 右上（品红） */}
+      {/* 右上（青） */}
       <div
         className="absolute -top-20 -right-40 w-[55rem] h-[55rem] rounded-full opacity-30"
         style={{
           background:
-            'radial-gradient(circle, rgba(236, 72, 153, 0.4), rgba(236, 72, 153, 0.1) 40%, transparent 70%)',
+            'radial-gradient(circle, rgba(34, 211, 238, 0.4), rgba(34, 211, 238, 0.1) 40%, transparent 70%)',
           filter: 'blur(80px)',
           animation: 'aurora2 22s ease-in-out infinite',
         }}
       />
-      {/* 中部（蓝） */}
+      {/* 中部（亮蓝） */}
       <div
         className="absolute top-1/3 left-1/4 w-[50rem] h-[50rem] rounded-full opacity-25"
         style={{
           background:
-            'radial-gradient(circle, rgba(99, 102, 241, 0.45), rgba(99, 102, 241, 0.1) 40%, transparent 70%)',
+            'radial-gradient(circle, rgba(96, 165, 250, 0.45), rgba(96, 165, 250, 0.1) 40%, transparent 70%)',
           filter: 'blur(80px)',
           animation: 'aurora3 25s ease-in-out infinite',
         }}
       />
-      {/* 底部（青） */}
+      {/* 底部（浅天蓝） */}
       <div
         className="absolute bottom-0 right-1/4 w-[45rem] h-[45rem] rounded-full opacity-20"
         style={{
           background:
-            'radial-gradient(circle, rgba(34, 211, 238, 0.35), rgba(34, 211, 238, 0.1) 40%, transparent 70%)',
+            'radial-gradient(circle, rgba(125, 211, 252, 0.35), rgba(125, 211, 252, 0.1) 40%, transparent 70%)',
           filter: 'blur(80px)',
           animation: 'aurora4 20s ease-in-out infinite',
         }}

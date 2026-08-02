@@ -32,7 +32,7 @@ export default function MouseFollower() {
     let lastMouseY = -1000;
     let frameCount = 0;
 
-    const colors = ['#6366f1', '#a855f7', '#ec4899', '#8b5cf6', '#3b82f6', '#06b6d4'];
+    const colors = ['#38bdf8', '#7dd3fc', '#22d3ee', '#60a5fa', '#0ea5e9', '#06b6d4'];
 
     function resize() {
       canvas.width = window.innerWidth;
@@ -109,9 +109,9 @@ export default function MouseFollower() {
       // Add subtle glow near mouse
       if (mouseX > 0 && mouseY > 0) {
         const gradient = ctx.createRadialGradient(mouseX, mouseY, 0, mouseX, mouseY, 120);
-        gradient.addColorStop(0, 'rgba(139, 92, 246, 0.08)');
-        gradient.addColorStop(0.5, 'rgba(168, 85, 247, 0.03)');
-        gradient.addColorStop(1, 'rgba(139, 92, 246, 0)');
+        gradient.addColorStop(0, 'rgba(56, 189, 248, 0.08)');
+        gradient.addColorStop(0.5, 'rgba(56, 189, 248, 0.03)');
+        gradient.addColorStop(1, 'rgba(56, 189, 248, 0)');
         ctx.fillStyle = gradient;
         ctx.fillRect(0, 0, canvas.width, canvas.height);
       }
@@ -166,7 +166,7 @@ export default function MouseFollower() {
       }
 
       // Draw connection lines between nearby particles
-      ctx.strokeStyle = '#a855f7';
+      ctx.strokeStyle = '#38bdf8';
       ctx.lineWidth = 0.5;
       for (let i = 0; i < particles.length; i++) {
         for (let j = i + 1; j < particles.length; j++) {

@@ -1,6 +1,5 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
-import ParticleField from '../components/animations/ParticleField';
 import ScrollReveal from '../components/animations/ScrollReveal.astro';
 import RecentPosts from '../components/blog/RecentPosts';
 import BackgroundBeams from '../components/background/BackgroundBeams';
@@ -19,8 +18,6 @@ const staticPosts = (await getCollection('blog'))
 ---
 
 <BaseLayout title="liukeyou — Developer & Creator" description="一个热爱技术、写作和创造的个人博客">
-  <ParticleField client:load />
-
   <!-- 炫酷背景光束 -->
   <BackgroundBeams client:load />
 
@@ -33,7 +30,7 @@ const staticPosts = (await getCollection('blog'))
             👋 Hello, I'm
           </p>
           <h1 class="text-5xl sm:text-7xl font-black leading-[1.05] mb-6">
-            <span class="gradient-text">liukeyou</span>
+            <span class="gradient-text gradient-text-animate">liukeyou</span>
           </h1>
           <p class="text-lg sm:text-xl text-text-secondary leading-relaxed mb-8">
             一个热爱技术的开发者。<br />
@@ -43,7 +40,7 @@ const staticPosts = (await getCollection('blog'))
           <div class="flex items-center gap-4">
             <a
               href="/blog"
-              class="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-accent text-white font-medium text-sm hover:bg-accent-hover transition-all hover:scale-105 active:scale-95"
+              class="ripple-btn inline-flex items-center gap-2 px-6 py-3 rounded-full bg-accent text-white font-medium text-sm hover:bg-accent-hover transition-all hover:scale-105 active:scale-95"
             >
               阅读博客
               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
