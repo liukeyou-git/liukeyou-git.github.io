@@ -391,3 +391,110 @@ html.lenis body {
     opacity: 0;
   }
 }
+
+/* ===== GlareHover 悬停眩光 ===== */
+.glare-hover {
+  width: var(--gh-width);
+  height: var(--gh-height);
+  background: var(--gh-bg);
+  border-radius: var(--gh-br);
+  border: 1px solid var(--gh-border);
+  overflow: hidden;
+  position: relative;
+}
+
+.glare-hover::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    var(--gh-angle),
+    hsla(0, 0%, 0%, 0) 60%,
+    var(--gh-rgba) 70%,
+    hsla(0, 0%, 0%, 0),
+    hsla(0, 0%, 0%, 0) 100%
+  );
+  transition: var(--gh-duration) ease;
+  background-size: var(--gh-size) var(--gh-size), 100% 100%;
+  background-repeat: no-repeat;
+  background-position: -100% -100%, 0 0;
+  pointer-events: none;
+}
+
+.glare-hover:hover::before {
+  background-position: 100% 100%, 0 0;
+}
+
+.glare-hover--play-once::before {
+  transition: none;
+}
+
+.glare-hover--play-once:hover::before {
+  transition: var(--gh-duration) ease;
+  background-position: 100% 100%, 0 0;
+}
+
+/* ===== BorderGlow 边框流光 ===== */
+@property --bg-angle {
+  syntax: '<angle>';
+  initial-value: 0deg;
+  inherits: false;
+}
+
+.border-glow {
+  position: relative;
+  border-radius: var(--bg-radius, 24px);
+  padding: 1px;
+  background: conic-gradient(
+    from var(--bg-angle, 0deg),
+    var(--bg-c1, #38bdf8),
+    var(--bg-c2, #60a5fa),
+    var(--bg-c3, #22d3ee),
+    var(--bg-c1, #38bdf8)
+  );
+  animation: bg-rotate 6s linear infinite;
+}
+
+@keyframes bg-rotate {
+  to {
+    --bg-angle: 360deg;
+  }
+}
+
+.border-glow__inner {
+  position: relative;
+  border-radius: calc(var(--bg-radius, 24px) - 1px);
+  background: var(--bg-card, var(--color-bg-card));
+  z-index: 1;
+}
+
+.border-glow__cursor {
+  position: absolute;
+  inset: 0;
+  border-radius: var(--bg-radius, 24px);
+  pointer-events: none;
+  z-index: 2;
+  opacity: var(--go, 0);
+  transition: opacity 0.2s ease;
+  background: radial-gradient(
+    circle var(--bg-glow-radius, 40px) at var(--gx, 50%) var(--gy, 50%),
+    hsl(var(--bg-glow-color, 199 89 48) / calc(0.7 * var(--bg-glow-intensity, 1))),
+    transparent 65%
+  );
+  mix-blend-mode: screen;
+}
+
+.border-glow--animated {
+  animation: bg-rotate 6s linear infinite, bg-fade-in 0.8s ease-out;
+}
+
+@keyframes bg-fade-in {
+  from {
+    opacity: 0;
+    transform: scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}

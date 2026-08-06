@@ -1,6 +1,7 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 import ScrollReveal from '../components/animations/ScrollReveal.astro';
+import BlurText from '../components/animations/BlurText';
 import RecentPosts from '../components/blog/RecentPosts';
 import BackgroundBeams from '../components/background/BackgroundBeams';
 import { getCollection } from 'astro:content';
@@ -32,10 +33,13 @@ const staticPosts = (await getCollection('blog'))
           <h1 class="text-5xl sm:text-7xl font-black leading-[1.05] mb-6">
             <span class="gradient-text gradient-text-animate">liukeyou</span>
           </h1>
-          <p class="text-lg sm:text-xl text-text-secondary leading-relaxed mb-8">
-            一个热爱技术的开发者。<br />
-            在这里记录我的思考和探索，分享技术心得与工作总结文章。
-          </p>
+          <BlurText
+            client:load
+            text="一个热爱技术的开发者，在这里记录我的思考和探索，分享技术心得与工作总结文章。"
+            animateBy="chars"
+            delay={40}
+            className="text-lg sm:text-xl text-text-secondary leading-relaxed mb-8"
+          />
 
           <div class="flex items-center gap-4">
             <a
@@ -69,9 +73,14 @@ const staticPosts = (await getCollection('blog'))
       <section class="mx-auto max-w-5xl px-6 pb-24">
         <ScrollReveal>
           <div class="flex items-center justify-between mb-8">
-            <h2 class="text-2xl font-bold">
-              最新文章
-            </h2>
+            <BlurText
+              client:load
+              as="h2"
+              text="最新文章"
+              animateBy="chars"
+              delay={80}
+              className="text-2xl font-bold text-text-primary"
+            />
             <a
               href="/blog"
               class="text-sm text-accent-hover hover:underline underline-offset-4"
