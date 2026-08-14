@@ -4,9 +4,11 @@ import remarkGfm from 'remark-gfm';
 import rehypeHighlight from 'rehype-highlight';
 import { supabase } from '../../lib/supabase';
 import { useAuth, AuthProvider } from '../../contexts/AuthContext';
+import { formatDate, hasSignificantUpdate } from '../../lib/utils';
 import PostActions from './PostActions';
 import CommentSection from './CommentSection';
 import AuthModal from '../auth/AuthModal';
+import Modal from '../ui/Modal';
 import type { Post, User } from '../../types';
 
 interface DynamicPostViewProps {
@@ -103,15 +105,6 @@ function DynamicPostViewInner({ postId }: DynamicPostViewProps) {
     }
   };
 
-  const formatDate = (dateString?: string) => {
-    if (!dateString) return '';
-    return new Date(dateString).toLocaleDateString('zh-CN', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-    });
-  };
-
   if (loading) {
     return (
       <div className="mx-auto max-w-3xl px-6 py-24 text-center">
@@ -185,8 +178,7 @@ function DynamicPostViewInner({ postId }: DynamicPostViewProps) {
           )}
           <span>·</span>
           <span>{formatDate(post.published_at || post.created_at)}</span>
-          {post.updated_at && post.published_at &&
-           new Date(post.updated_at).getTime() - new Date(post.published_at).getTime() > 60 * 1000 && (
+          {hasSignificantUpdate(post.published_at, post.updated_at) && (
             <span className="flex items-center gap-1">
               <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path>
@@ -245,29 +237,32 @@ function DynamicPostViewInner({ postId }: DynamicPostViewProps) {
 
       <CommentSection client:load postId={post.id} />
 
-      {showDeleteConfirm && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-          <div className="bg-bg-card border border-white/10 rounded-xl p-6 max-w-sm mx-4">
-            <h3 className="text-lg font-bold mb-2">确认删除？</h3>
-            <p className="text-text-secondary text-sm mb-6">文章删除后无法恢复</p>
-            <div className="flex items-center justify-end gap-3">
-              <button
-                onClick={() => setShowDeleteConfirm(false)}
-                className="px-4 py-2 text-text-secondary hover:text-text-primary"
-              >
-                取消
-              </button>
-              <button
-                onClick={handleDelete}
-                disabled={isDeleting}
-                className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors disabled:opacity-50"
-              >
-                {isDeleting ? '删除中...' : '确认删除'}
-              </button>
-            </div>
+      <Modal
+        isOpen={showDeleteConfirm}
+        onClose={() => setShowDeleteConfirm(false)}
+        labelledBy="delete-confirm-title"
+        containerClassName="max-w-sm"
+      >
+        <div className="p-6">
+          <h3 id="delete-confirm-title" className="text-lg font-bold mb-2">确认删除？</h3>
+          <p className="text-text-secondary text-sm mb-6">文章删除后无法恢复</p>
+          <div className="flex items-center justify-end gap-3">
+            <button
+              onClick={() => setShowDeleteConfirm(false)}
+              className="px-4 py-2 text-text-secondary hover:text-text-primary transition-colors"
+            >
+              取消
+            </button>
+            <button
+              onClick={handleDelete}
+              disabled={isDeleting}
+              className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors disabled:opacity-50"
+            >
+              {isDeleting ? '删除中...' : '确认删除'}
+            </button>
           </div>
         </div>
-      )}
+      </Modal>
     </article>
   );
 }

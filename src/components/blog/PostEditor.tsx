@@ -4,6 +4,7 @@ import remarkGfm from 'remark-gfm';
 import rehypeHighlight from 'rehype-highlight';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../contexts/AuthContext';
+import { scrollToTop } from '../../lib/lenis-instance';
 import type { PostDraft } from '../../types';
 
 interface PostEditorProps {
@@ -283,7 +284,7 @@ export default function PostEditor({ initial, onSaved, onCancel }: PostEditorPro
                   setCoverUrl('');
                   setSavedInfo(null);
                   setError(null);
-                  window.scrollTo({ top: 0, behavior: 'smooth' });
+                  scrollToTop();
                 }}
                 className="w-full px-4 py-2.5 text-center rounded-lg border border-white/10 bg-bg-primary text-text-secondary hover:text-text-primary hover:border-white/20 transition-colors"
               >

@@ -76,3 +76,53 @@ CREATE TRIGGER trg_posts_updated_at
 NOTIFY pgrst, 'reload schema';
 
 SELECT 'posts 表创建完成' AS status;
+
+
+-- ============================================
+-- 文章点赞 post_likes 表
+-- PostActions.tsx 依赖此表实现点赞/取消点赞
+-- 在 Supabase SQL Editor 中执行此脚本
+-- ============================================
+
+-- 1. 创建 post_likes 表
+CREATE TABLE IF NOT EXISTS public.post_likes (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  post_id UUID REFERENCES public.posts(id) ON DELETE CASCADE,
+  user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
+  created_at TIMESTAMPTZ DEFAULT now(),
+  -- 防重复点赞：PostActions 依赖此 unique 约束做幂等判断（error.message.includes('duplicate')）
+  UNIQUE (post_id, user_id)
+);
+
+-- 2. 创建索引
+CREATE INDEX IF NOT EXISTS idx_post_likes_post ON public.post_likes(post_id);
+CREATE INDEX IF NOT EXISTS idx_post_likes_user ON public.post_likes(user_id);
+
+-- 3. 启用 RLS
+ALTER TABLE public.post_likes ENABLE ROW LEVEL SECURITY;
+
+-- 4. 删除已存在的策略（幂等）
+DROP POLICY IF EXISTS "Anyone can read likes" ON public.post_likes;
+DROP POLICY IF EXISTS "Authenticated can like" ON public.post_likes;
+DROP POLICY IF EXISTS "Users can unlike own" ON public.post_likes;
+
+-- 5. 创建 RLS 策略
+-- 5.1 任何人可读点赞数
+CREATE POLICY "Anyone can read likes" ON public.post_likes
+  FOR SELECT USING (true);
+
+-- 5.2 登录用户可点赞
+CREATE POLICY "Authenticated can like" ON public.post_likes
+  FOR INSERT WITH CHECK (auth.uid() = user_id);
+
+-- 5.3 用户可取消自己的点赞
+CREATE POLICY "Users can unlike own" ON public.post_likes
+  FOR DELETE USING (auth.uid() = user_id);
+
+-- 6. 授权
+GRANT SELECT, INSERT, DELETE ON public.post_likes TO anon, authenticated;
+
+-- 7. 重新加载 PostgREST schema
+NOTIFY pgrst, 'reload schema';
+
+SELECT 'post_likes 表创建完成' AS status;

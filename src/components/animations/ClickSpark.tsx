@@ -17,27 +17,33 @@ interface Spark {
 /**
  * 点击粒子火花
  * - 全局监听 click，在点击坐标迸发浅蓝粒子
- * - 带初速度、重力、淡出，约 600ms 消亡
- * - 无点击时空跑开销极低
+ * - 按需 rAF：sparks 为空时不跑循环，无点击时 CPU 占用为 0
+ * - prefers-reduced-motion：不启动
  */
 export default function ClickSpark() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
     let sparks: Spark[] = [];
-    let animationId: number;
+    let animationId: number | null = null;
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
 
-    // 浅蓝系混色（sky-400 / cyan-400 / sky-300）
     const colors = ['#38bdf8', '#22d3ee', '#7dd3fc', '#60a5fa'];
 
     const resize = () => {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
+      canvas.width = window.innerWidth * dpr;
+      canvas.height = window.innerHeight * dpr;
+      canvas.style.width = `${window.innerWidth}px`;
+      canvas.style.height = `${window.innerHeight}px`;
+      ctx.setTransform(1, 0, 0, 1, 0, 0);
+      ctx.scale(dpr, dpr);
     };
     resize();
     window.addEventListener('resize', resize);
@@ -59,10 +65,15 @@ export default function ClickSpark() {
           maxLife: 36,
         });
       }
+      // 若 rAF 未运行则启动
+      if (animationId === null) {
+        draw();
+      }
     };
 
-    const draw = () => {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
+    function draw() {
+      if (!ctx) return;
+      ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
 
       for (let i = sparks.length - 1; i >= 0; i--) {
         const s = sparks[i];
@@ -92,16 +103,21 @@ export default function ClickSpark() {
         ctx.globalAlpha = 1;
       }
 
+      // sparks 为空则停止循环（按需 rAF 核心）
+      if (sparks.length === 0) {
+        animationId = null;
+        return;
+      }
       animationId = requestAnimationFrame(draw);
-    };
+    }
 
     window.addEventListener('click', onClick, { passive: true });
-    draw();
 
     return () => {
-      cancelAnimationFrame(animationId);
+      if (animationId !== null) cancelAnimationFrame(animationId);
       window.removeEventListener('resize', resize);
       window.removeEventListener('click', onClick);
+      sparks = [];
     };
   }, []);
 

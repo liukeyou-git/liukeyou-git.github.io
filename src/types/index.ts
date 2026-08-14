@@ -65,3 +65,20 @@ export interface RegisterFormData {
 export interface CommentFormData {
   content: string;
 }
+
+/** 文章卡片统一数据结构（供 RecentPosts / FilterablePostList 共享 PostCard 复用） */
+export interface PostCardData {
+  id: string;
+  title: string;
+  description?: string;
+  /** ISO 字符串 */
+  date: string;
+  updatedAt?: string;
+  tags: string[];
+  href: string;
+  cover?: string;
+  author?: string;
+  source: 'static' | 'dynamic' | 'mdx';
+  /** 用于入场动画 stagger */
+  index?: number;
+}

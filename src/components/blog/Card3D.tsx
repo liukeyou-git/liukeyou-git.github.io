@@ -1,4 +1,11 @@
-import { useRef, useState, type ReactNode, type CSSProperties } from 'react';
+import { useRef, type ReactNode, type CSSProperties } from 'react';
+import {
+  motion,
+  useMotionValue,
+  useSpring,
+  useMotionTemplate,
+  useReducedMotion,
+} from 'framer-motion';
 
 interface Card3DProps {
   children: ReactNode;
@@ -6,34 +13,44 @@ interface Card3DProps {
   className?: string;
   /** 最大倾斜角度（度），默认 12 */
   maxTilt?: number;
-  /** 高光不透明度 0-1，默认 0.15 */
+  /** 聚光不透明度 0-100（百分比，传给 color-mix），默认 15 */
   glareOpacity?: number;
-  /** 是否禁用（用于非链接场景） */
+  /** 聚光半径 px，默认 250 */
+  spotlightRadius?: number;
+  /** 是否禁用倾斜与跳转（用于非交互场景） */
   disabled?: boolean;
 }
 
+const springConfig = { damping: 30, stiffness: 100, mass: 2 };
+
 /**
- * Aceternity UI 风格的 3D 卡片
- * - 鼠标悬浮时跟随倾斜（rotateX/rotateY）
- * - 鼠标位置生成高光（spotlight）
- * - 离开平滑复位
- * - perspective + transform-style: preserve-3d
+ * 3D 倾斜卡片（react-bits SpotlightCard + TiltedCard 模式合体）
+ * - 倾斜：useMotionValue + useSpring + useMotionTemplate 写入 motion.div style，鼠标移动零 React 重渲染
+ * - 聚光：onMouseMove 直接写 CSS 变量 --mouse-x/--mouse-y，由 .card-glow::before 渲染
+ * - 键盘可访问：:focus-within 触发聚光（CSS 级，无需 JS）
+ * - prefers-reduced-motion：仅保留聚光，关闭倾斜
  */
 export default function Card3D({
   children,
   href,
   className = '',
   maxTilt = 12,
-  glareOpacity = 0.15,
+  glareOpacity = 15,
+  spotlightRadius = 250,
   disabled = false,
 }: Card3DProps) {
   const ref = useRef<HTMLDivElement>(null);
-  const [transform, setTransform] = useState<string>('');
-  const [glare, setGlare] = useState<{ x: number; y: number; opacity: number }>({
-    x: 50,
-    y: 50,
-    opacity: 0,
-  });
+  const reduce = useReducedMotion();
+
+  const rotateX = useMotionValue(0);
+  const rotateY = useMotionValue(0);
+  const scale = useMotionValue(1);
+
+  const springRotateX = useSpring(rotateX, springConfig);
+  const springRotateY = useSpring(rotateY, springConfig);
+  const springScale = useSpring(scale, springConfig);
+
+  const transform = useMotionTemplate`perspective(1000px) rotateX(${springRotateX}deg) rotateY(${springRotateY}deg) scale3d(${springScale}, ${springScale}, 1)`;
 
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
     if (disabled || !ref.current) return;
@@ -42,57 +59,51 @@ export default function Card3D({
     const y = e.clientY - rect.top;
     const centerX = rect.width / 2;
     const centerY = rect.height / 2;
-    // 计算倾斜角度（基于偏离中心的比例）
-    const rotateY = ((x - centerX) / centerX) * maxTilt;
-    const rotateX = -((y - centerY) / centerY) * maxTilt;
-    setTransform(
-      `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale3d(1.02, 1.02, 1.02)`
-    );
-    setGlare({
-      x: (x / rect.width) * 100,
-      y: (y / rect.height) * 100,
-      opacity: glareOpacity,
-    });
+
+    // CSS 变量聚光（零重渲染，浏览器原生优化路径）
+    const el = ref.current;
+    el.style.setProperty('--mouse-x', `${(x / rect.width) * 100}%`);
+    el.style.setProperty('--mouse-y', `${(y / rect.height) * 100}%`);
+
+    // 倾斜与缩放 motion value（零重渲染，spring 物理平滑）
+    if (!reduce) {
+      rotateX.set(-((y - centerY) / centerY) * maxTilt);
+      rotateY.set(((x - centerX) / centerX) * maxTilt);
+      scale.set(1.02);
+    }
   };
 
   const handleMouseLeave = () => {
-    setTransform('perspective(1000px) rotateX(0deg) rotateY(0deg) scale3d(1, 1, 1)');
-    setGlare((g) => ({ ...g, opacity: 0 }));
+    rotateX.set(0);
+    rotateY.set(0);
+    scale.set(1);
   };
 
-  const wrapperStyle: CSSProperties = {
-    transform,
-    transition: 'transform 0.3s ease-out',
+  const baseStyle = {
     transformStyle: 'preserve-3d',
     willChange: 'transform',
-  };
+    '--glare-opacity': `${glareOpacity}%`,
+    '--spotlight-radius': `${spotlightRadius}px`,
+  } as CSSProperties;
 
   const inner = (
-    <div
+    <motion.div
       ref={ref}
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
-      className={`relative overflow-hidden rounded-xl ${className}`}
-      style={wrapperStyle}
+      className={`card-glow relative overflow-hidden rounded-xl ${className}`}
+      style={disabled ? baseStyle : { ...baseStyle, transform }}
     >
       {children}
-
-      {/* 鼠标高光层 */}
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute inset-0 transition-opacity duration-300"
-        style={{
-          opacity: glare.opacity,
-          background: `radial-gradient(circle 250px at ${glare.x}% ${glare.y}%, rgba(255,255,255,0.6), transparent 60%)`,
-          mixBlendMode: 'overlay',
-        }}
-      />
-    </div>
+    </motion.div>
   );
 
   if (href && !disabled) {
     return (
-      <a href={href} className="block focus:outline-none focus-visible:ring-2 focus-visible:ring-accent rounded-xl">
+      <a
+        href={href}
+        className="block focus:outline-none focus-visible:ring-2 focus-visible:ring-accent rounded-xl"
+      >
         {inner}
       </a>
     );

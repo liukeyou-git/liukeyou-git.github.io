@@ -1,6 +1,31 @@
 @import "tailwindcss";
 
+/* 启用 dark: 变体（基于 html.dark 类） */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* ===== 主题令牌：亮色为默认（@theme 编译到 :root） ===== */
 @theme {
+  --color-bg-primary: #fafafa;
+  --color-bg-secondary: #f1f5f9;
+  --color-bg-card: #ffffff;
+  --color-text-primary: #1a202c;
+  --color-text-secondary: #64748b;
+  --color-accent: #0284c7;
+  --color-accent-hover: #0ea5e9;
+  --color-accent-gradient-from: #0ea5e9;
+  --color-accent-gradient-via: #2563eb;
+  --color-accent-gradient-to: #06b6d4;
+  --color-border-subtle: rgba(15, 23, 42, 0.08);
+  --color-glass-bg: rgba(15, 23, 42, 0.03);
+  --color-glass-border: rgba(15, 23, 42, 0.08);
+  --font-sans: 'Inter', 'SF Pro Display', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+  --radius-card: 0.75rem;
+  --radius-pill: 9999px;
+}
+
+/* ===== 暗色主题覆盖（变量名必须与 @theme 一一对应） ===== */
+:root.dark {
   --color-bg-primary: #0a0f1c;
   --color-bg-secondary: #0f1626;
   --color-bg-card: #131c2e;
@@ -11,8 +36,9 @@
   --color-accent-gradient-from: #38bdf8;
   --color-accent-gradient-via: #60a5fa;
   --color-accent-gradient-to: #22d3ee;
-  --font-sans: 'Inter', 'SF Pro Display', system-ui, sans-serif;
-  --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+  --color-border-subtle: rgba(255, 255, 255, 0.08);
+  --color-glass-bg: rgba(255, 255, 255, 0.03);
+  --color-glass-border: rgba(255, 255, 255, 0.06);
 }
 
 /* ===== 基础样式 ===== */
@@ -27,11 +53,12 @@ body {
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 /* ===== 选中文字颜色 ===== */
 ::selection {
-  background: rgba(56, 189, 248, 0.3);
+  background: color-mix(in srgb, var(--color-accent) 30%, transparent);
   color: var(--color-text-primary);
 }
 
@@ -52,8 +79,8 @@ body {
 
 /* ===== 代码块 ===== */
 pre.astro-code {
-  border-radius: 0.75rem;
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: var(--radius-card);
+  border: 1px solid var(--color-border-subtle);
   padding: 1.25rem;
   overflow-x: auto;
   font-size: 0.875rem;
@@ -74,7 +101,7 @@ pre.astro-code {
   margin-top: 2.5rem;
   margin-bottom: 1rem;
   padding-bottom: 0.5rem;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  border-bottom: 1px solid var(--color-border-subtle);
 }
 
 .prose h3 {
@@ -116,7 +143,7 @@ pre.astro-code {
 }
 
 .prose img {
-  border-radius: 0.75rem;
+  border-radius: var(--radius-card);
   max-width: 100%;
   height: auto;
 }
@@ -221,9 +248,9 @@ pre.astro-code {
 }
 
 .glass {
-  background: rgba(255, 255, 255, 0.03);
+  background: var(--color-glass-bg);
   backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--color-glass-border);
 }
 
 /* ===== 卡片悬停光效 ===== */
@@ -232,8 +259,8 @@ pre.astro-code {
   position: absolute;
   inset: 0;
   background: radial-gradient(
-    600px circle at var(--mouse-x, 50%) var(--mouse-y, 50%),
-    rgba(56, 189, 248, 0.08),
+    var(--spotlight-radius, 600px) circle at var(--mouse-x, 50%) var(--mouse-y, 50%),
+    color-mix(in srgb, var(--color-accent) var(--glare-opacity, 8%), transparent),
     transparent 40%
   );
   opacity: 0;
@@ -243,7 +270,8 @@ pre.astro-code {
   z-index: 0;
 }
 
-.card-glow:hover::before {
+.card-glow:hover::before,
+.card-glow:focus-within::before {
   opacity: 1;
 }
 
@@ -264,7 +292,7 @@ pre.astro-code {
   inset: 0;
   background: radial-gradient(
     200px circle at var(--mouse-x, 50%) var(--mouse-y, 50%),
-    rgba(56, 189, 248, 0.15),
+    color-mix(in srgb, var(--color-accent) 15%, transparent),
     transparent 40%
   );
   opacity: 0;
@@ -272,7 +300,8 @@ pre.astro-code {
   pointer-events: none;
 }
 
-.interactive-glow:hover::after {
+.interactive-glow:hover::after,
+.interactive-glow:focus-within::after {
   opacity: 1;
 }
 
@@ -496,5 +525,15 @@ html.lenis body {
   to {
     opacity: 1;
     transform: scale(1);
+  }
+}
+
+/* ===== 全局可访问性：尊重 prefers-reduced-motion ===== */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }
