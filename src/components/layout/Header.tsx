@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../../contexts/AuthContext';
 import AuthModal from '../auth/AuthModal';
+import ThemeToggle from '../ui/ThemeToggle';
 
 const navItems = [
   { href: '/', label: '主页' },
@@ -8,17 +10,31 @@ const navItems = [
   { href: '/about', label: '关于此网站' },
 ];
 
+/** 判断当前路径是否匹配导航项（首页需精确匹配，其余前缀匹配） */
+function isPathActive(pathname: string, href: string): boolean {
+  if (href === '/') return pathname === '/';
+  return pathname === href || pathname.startsWith(href + '/');
+}
+
 export default function Header() {
   const { authState, logout, isEnabled } = useAuth();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
+  const [pathname, setPathname] = useState<string>('');
 
   const handleLogout = async () => {
     await logout();
     setIsUserMenuOpen(false);
   };
+
+  useEffect(() => {
+    setPathname(window.location.pathname);
+    const onSwap = () => setPathname(window.location.pathname);
+    document.addEventListener('astro:after-swap', onSwap);
+    return () => document.removeEventListener('astro:after-swap', onSwap);
+  }, []);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -58,19 +74,33 @@ export default function Header() {
           </a>
 
           <nav className="hidden sm:flex items-center gap-8">
-            {navItems.map((item) => (
-              <a
-                key={item.href}
-                href={item.href}
-                className="text-sm text-text-secondary hover:text-text-primary transition-colors relative group"
-              >
-                {item.label}
-                <span className="absolute -bottom-1 left-0 w-0 h-px bg-accent transition-all duration-300 group-hover:w-full"></span>
-              </a>
-            ))}
+            {navItems.map((item) => {
+              const active = isPathActive(pathname, item.href);
+              return (
+                <a
+                  key={item.href}
+                  href={item.href}
+                  className={`text-sm transition-colors relative group ${
+                    active
+                      ? 'text-text-primary'
+                      : 'text-text-secondary hover:text-text-primary'
+                  }`}
+                  aria-current={active ? 'page' : undefined}
+                >
+                  {item.label}
+                  <span
+                    className={`absolute -bottom-1 left-0 h-px bg-accent transition-all duration-300 ${
+                      active ? 'w-full' : 'w-0 group-hover:w-full'
+                    }`}
+                  ></span>
+                </a>
+              );
+            })}
           </nav>
 
           <div className="flex items-center gap-3">
+            <ThemeToggle />
+
             {isEnabled && authState.user && (
               <a
                 href="/write"
@@ -168,6 +198,8 @@ export default function Header() {
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
               className="sm:hidden text-text-secondary hover:text-text-primary transition-colors"
               aria-label="Toggle menu"
+              aria-expanded={isMobileMenuOpen}
+              aria-controls="mobile-menu"
             >
               <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <line x1="3" y1="12" x2="21" y2="12"></line>
@@ -178,51 +210,70 @@ export default function Header() {
           </div>
         </div>
 
-        {isMobileMenuOpen && (
-          <div className="sm:hidden bg-bg-primary/95 backdrop-blur-lg border-b border-white/5">
-            <nav className="flex flex-col px-6 py-4 gap-4">
-              {navItems.map((item) => (
-                <a
-                  key={item.href}
-                  href={item.href}
-                  onClick={() => setIsMobileMenuOpen(false)}
-                  className="text-text-secondary hover:text-text-primary transition-colors py-1"
-                >
-                  {item.label}
-                </a>
-              ))}
-              {isEnabled && authState.user && (
-                <>
-                  <a
-                    href="/write"
-                    onClick={() => setIsMobileMenuOpen(false)}
-                    className="text-text-secondary hover:text-text-primary transition-colors py-1"
+        <AnimatePresence>
+          {isMobileMenuOpen && (
+            <motion.div
+              id="mobile-menu"
+              role="region"
+              aria-label="移动端导航菜单"
+              className="sm:hidden overflow-hidden bg-bg-primary/95 backdrop-blur-lg border-b border-white/5"
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: 'auto', opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{ duration: 0.25, ease: [0.25, 0.46, 0.45, 0.94] }}
+            >
+              <nav className="flex flex-col px-6 py-4 gap-4">
+                {navItems.map((item) => {
+                  const active = isPathActive(pathname, item.href);
+                  return (
+                    <a
+                      key={item.href}
+                      href={item.href}
+                      onClick={() => setIsMobileMenuOpen(false)}
+                      className={`transition-colors py-1 ${
+                        active
+                          ? 'text-text-primary'
+                          : 'text-text-secondary hover:text-text-primary'
+                      }`}
+                      aria-current={active ? 'page' : undefined}
+                    >
+                      {item.label}
+                    </a>
+                  );
+                })}
+                {isEnabled && authState.user && (
+                  <>
+                    <a
+                      href="/write"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                      className="text-text-secondary hover:text-text-primary transition-colors py-1"
+                    >
+                      写文章
+                    </a>
+                    <a
+                      href="/profile"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                      className="text-text-secondary hover:text-text-primary transition-colors py-1"
+                    >
+                      个人中心
+                    </a>
+                  </>
+                )}
+                {isEnabled && !authState.user && (
+                  <button
+                    onClick={() => {
+                      setIsMobileMenuOpen(false);
+                      setIsModalOpen(true);
+                    }}
+                    className="text-left text-text-secondary hover:text-text-primary transition-colors py-1"
                   >
-                    写文章
-                  </a>
-                  <a
-                    href="/profile"
-                    onClick={() => setIsMobileMenuOpen(false)}
-                    className="text-text-secondary hover:text-text-primary transition-colors py-1"
-                  >
-                    个人中心
-                  </a>
-                </>
-              )}
-              {isEnabled && !authState.user && (
-                <button
-                  onClick={() => {
-                    setIsMobileMenuOpen(false);
-                    setIsModalOpen(true);
-                  }}
-                  className="text-left text-text-secondary hover:text-text-primary transition-colors py-1"
-                >
-                  登录 / 注册
-                </button>
-              )}
-            </nav>
-          </div>
-        )}
+                    登录 / 注册
+                  </button>
+                )}
+              </nav>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </header>
 
       <AuthModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />

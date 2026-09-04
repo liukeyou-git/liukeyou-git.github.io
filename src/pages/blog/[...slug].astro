@@ -5,6 +5,7 @@ import TableOfContents from '../../components/blog/TableOfContents';
 import CommentSection from '../../components/blog/CommentSection';
 import PostActions from '../../components/blog/PostActions';
 import AuroraBackground from '../../components/background/AuroraBackground';
+import { formatDate } from '../../lib/utils';
 
 export async function getStaticPaths() {
   const posts = await getCollection('blog');
@@ -16,14 +17,6 @@ export async function getStaticPaths() {
 
 const { slug } = Astro.props as { slug: string };
 const postImport = await import(`../../content/blog/${slug}.mdx`);
-
-const formatDate = (date: Date) => {
-  return new Date(date).toLocaleDateString('zh-CN', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-  });
-};
 
 const { Content, frontmatter } = postImport;
 ---
